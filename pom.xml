@@ -29,6 +29,13 @@
         <logback.version>1.1.2</logback.version>
         <log4j.version>1.2.17</log4j.version>
         <mina.version>2.0.9</mina.version>
+        <hibernate.version>4.3.10.Final</hibernate.version>
+        <derby.version>10.8.2.2</derby.version>
+        <junit.version>4.12</junit.version>
+        <mockito.version>1.9.0</mockito.version>
+        <guava.version>18.0</guava.version>
+        <jna.version>4.1.0</jna.version>
+        <joda.time>2.1</joda.time>
     </properties>
 
     <dependencies>
@@ -56,16 +63,77 @@
             <version>${mina.version}</version>
         </dependency>
 
-        <!--<dependency>-->
-            <!--<groupId>org.apache.mina</groupId>-->
-            <!--<artifactId>mina-transport-serial</artifactId>-->
-            <!--<version>${mina.version}</version>-->
-        <!--</dependency>-->
+        <dependency>
+            <groupId>org.apache.mina</groupId>
+            <artifactId>mina-transport-serial</artifactId>
+            <version>${mina.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.boris</groupId>
             <artifactId>winrun4j</artifactId>
             <version>0.4.5</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-entitymanager</artifactId>
+            <version>${hibernate.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>${hibernate.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-c3p0</artifactId>
+            <version>${hibernate.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>hibernate</groupId>
+            <artifactId>hibernate-annotations</artifactId>
+            <version>${hibernate.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.derby</groupId>
+            <artifactId>derby</artifactId>
+            <version>${derby.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${mockito.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>net.java.dev.jna</groupId>
+            <artifactId>jna</artifactId>
+            <version>${jna.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>joda-time</groupId>
+            <artifactId>joda-time</artifactId>
+            <version>${joda.time}</version>
         </dependency>
 
     </dependencies>
@@ -77,7 +145,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.3</version>
                 <configuration>
-                    <compilerVersion>1.8</compilerVersion>
+                    <source>1.8</source>
+                    <target>1.8</target>
                 </configuration>
             </plugin>
         </plugins>
