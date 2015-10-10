@@ -26,10 +26,11 @@
     </developers>
 
     <properties>
+        <rxtx.version>2.1.7</rxtx.version>
         <logback.version>1.1.2</logback.version>
         <log4j.version>1.2.17</log4j.version>
-        <mina.version>2.0.9</mina.version>
-        <hibernate.version>4.3.10.Final</hibernate.version>
+        <mina.version>2.0.7</mina.version>
+        <hibernate.version>5.0.2.Final</hibernate.version>
         <derby.version>10.8.2.2</derby.version>
         <junit.version>4.12</junit.version>
         <mockito.version>1.9.0</mockito.version>
@@ -39,6 +40,13 @@
     </properties>
 
     <dependencies>
+
+        <dependency>
+            <groupId>org.rxtx</groupId>
+            <artifactId>rxtx</artifactId>
+            <version>${rxtx.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
@@ -65,8 +73,30 @@
 
         <dependency>
             <groupId>org.apache.mina</groupId>
+            <artifactId>mina-integration-beans</artifactId>
+            <version>${mina.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.mina</groupId>
+                    <artifactId>mina-core</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.mina</groupId>
             <artifactId>mina-transport-serial</artifactId>
             <version>${mina.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.mina</groupId>
+                    <artifactId>mina-integration-beans</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.mina</groupId>
+                    <artifactId>mina-core</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -94,9 +124,9 @@
         </dependency>
 
         <dependency>
-            <groupId>hibernate</groupId>
+            <groupId>org.hibernate</groupId>
             <artifactId>hibernate-annotations</artifactId>
-            <version>${hibernate.version}</version>
+            <version>3.5.6-Final</version>
         </dependency>
 
         <dependency>
@@ -148,6 +178,26 @@
                     <source>1.8</source>
                     <target>1.8</target>
                 </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.3</version>
+                <configuration>
+                    <descriptors>
+                        <descriptor>src/main/assembly/assembly.xml</descriptor>
+                    </descriptors>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

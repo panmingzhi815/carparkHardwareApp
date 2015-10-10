@@ -19,9 +19,13 @@ import org.dom4j.Element;
 
 import com.google.common.base.Strings;
 import com.google.common.util.concurrent.Uninterruptibles;
+import org.dongluhitec.card.carpark.domain.ConnectionDirection;
+import org.dongluhitec.card.carpark.domain.ConnectionUsage;
 import org.dongluhitec.card.carpark.exception.EncryptException;
 import org.dongluhitec.card.carpark.model.CarparkSetting;
 import org.dongluhitec.card.carpark.model.Device;
+import org.dongluhitec.card.carpark.ui.Config;
+import org.dongluhitec.card.carpark.ui.LinkDevice;
 import org.dongluhitec.card.carpark.util.RSAUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,7 +97,7 @@ public class HardwareUtil {
 			root.addElement("CardReaderID").setText(readerID);
 
 			WebMessage wm = new WebMessage(WebMessageType.发送卡号, document.getRootElement().asXML());
-			HardwareUtil.writeMsg(session, wm.toString());
+			HardwareUtil.writeMsg(session, wm.toString(),"发送刷卡记录");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -106,7 +110,7 @@ public class HardwareUtil {
 		try {
 			String value = "<dongluCarpark><result>true</result></dongluCarpark>";
 			WebMessage wm = new WebMessage(WebMessageType.成功, value);
-			writeMsg(session, wm.toString());
+			writeMsg(session, wm.toString(),"返回接收成功响应");
 			return wm.toString();
 		} catch (Exception e) {
 			throw new EncryptException("响应设备控制失败", e);
@@ -118,28 +122,32 @@ public class HardwareUtil {
 		return sdf.format(date);
 	}
 
-	public static void sendDeviceInfo(IoSession session, CarparkSetting cs) {
+	public static void sendDeviceInfo(IoSession session, Config cs) {
 		try {
 			Document dom = DocumentHelper.createDocument();
 			Element rootElement = dom.addElement("dongluCarpark");
 			Element station = rootElement.addElement("station");
 			station.addElement("account").setText("donglu");
 			station.addElement("password").setText("123456");
-			station.addElement("stationName").setText(cs.getStationName());
+			station.addElement("stationName").setText(cs.getGangtingName());
 			station.addElement("stationIP").setText(HardwareUtil.getLocalIP());
 			station.addElement("stationTime").setText(HardwareUtil.formatDateTime(new Date()));
 
-			for (Device device : cs.getDeviceList()) {
+			List<LinkDevice> linkDeviceList = cs.getLinkDeviceList();
+			cs.getLinkDeviceList().forEach(each->{
 				Element monitor = rootElement.addElement("monitor");
 				Element deviceElement = monitor.addElement("device");
-				deviceElement.addElement("deviceName").setText(device.getName());
-				deviceElement.addElement("deviceInOutType").setText(device.getType().equals("进口") == true ? "in" : "out");
-				deviceElement.addElement("deviceDisplayAndVoiceInside").setText(device.getSupportInsideVoice().equals("支持") == true ? "true" : "false");
-				deviceElement.addElement("deviceDisplayAndVoiceOutside").setText(device.getSupportOutsideVoice().equals("支持") == true ? "true" : "false");
-				deviceElement.addElement("deviceDisplaySupportChinese").setText(device.getSupportChinese().equals("支持") == true ? "true" : "false");
-			}
+				deviceElement.addElement("deviceName").setText(each.getDeviceName());
+				deviceElement.addElement("deviceInOutType").setText(each.getDeviceType().equals("进口") == true ? "in" : "out");
+				deviceElement.addElement("deviceDisplayAndVoiceInside").setText("true");
+				deviceElement.addElement("deviceDisplayAndVoiceOutside").setText("true");
+				deviceElement.addElement("deviceDisplaySupportChinese").setText("true");
+//				deviceElement.addElement("deviceDisplayAndVoiceInside").setText(device.getSupportInsideVoice().equals("支持") == true ? "true" : "false");
+//				deviceElement.addElement("deviceDisplayAndVoiceOutside").setText(device.getSupportOutsideVoice().equals("支持") == true ? "true" : "false");
+//				deviceElement.addElement("deviceDisplaySupportChinese").setText(device.getSupportChinese().equals("支持") == true ? "true" : "false");
+			});
 			WebMessage wm = new WebMessage(WebMessageType.设备信息, dom.getRootElement().asXML());
-			HardwareUtil.writeMsg(session, wm.toString());
+			HardwareUtil.writeMsg(session, wm.toString(),"发送设备信息");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -155,9 +163,15 @@ public class HardwareUtil {
 
 	}
 
-	public static void writeMsg(IoSession ioSession, String msg) {
+	public static void writeMsg(IoSession ioSession, String msg,String mark) {
 		try {
 			ioSession.write(msg);
+
+			ConnectionUsage connectionUsage = new ConnectionUsage();
+			connectionUsage.setDirection(ConnectionDirection.发送);
+			connectionUsage.setShortContent(mark);
+			connectionUsage.setLongContent(msg.getBytes());
+			HardwareService.hibernateDao.save(connectionUsage);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -247,7 +261,7 @@ public class HardwareUtil {
 			root.addElement("plateSmallImage").setText(smallImagePath.toFile().getAbsolutePath());
 
 			WebMessage wm = new WebMessage(WebMessageType.发送车牌, document.getRootElement().asXML());
-			HardwareUtil.writeMsg(session, wm.toString());
+			HardwareUtil.writeMsg(session, wm.toString(),"发送车牌记录");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

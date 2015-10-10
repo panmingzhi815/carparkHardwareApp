@@ -4,7 +4,7 @@ import javax.persistence.*;
 import java.util.Date;
 
 /**
- * ¿¨Æ¬½ø³ö¼ÇÂ¼
+ * å¡ç‰‡è¿›å‡ºè®°å½•
  * Created by panmingzhi815 on 2015/10/8 0008.
  */
 @Entity
@@ -12,7 +12,7 @@ public class CardUsage extends AbstractDomain{
     @Column
     private String identifier;
     @Column
-    private Date deviceTime;
+    private String deviceName;
     @Column
     private Date databaseTime;
 
@@ -24,12 +24,12 @@ public class CardUsage extends AbstractDomain{
         this.identifier = identifier;
     }
 
-    public Date getDeviceTime() {
-        return deviceTime;
+    public String getDeviceName() {
+        return deviceName;
     }
 
-    public void setDeviceTime(Date deviceTime) {
-        this.deviceTime = deviceTime;
+    public void setDeviceName(String deviceName) {
+        this.deviceName = deviceName;
     }
 
     public Date getDatabaseTime() {

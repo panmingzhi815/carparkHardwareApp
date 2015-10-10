@@ -3,7 +3,7 @@ package org.dongluhitec.card.carpark.domain;
 import javax.persistence.*;
 
 /**
- * 对接信息记录
+ * 瀵规帴淇℃伅璁板綍
  * Created by panmingzhi815 on 2015/10/8 0008.
  */
 @Entity

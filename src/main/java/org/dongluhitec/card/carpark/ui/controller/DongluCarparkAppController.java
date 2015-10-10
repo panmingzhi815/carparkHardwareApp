@@ -1,118 +1,373 @@
 package org.dongluhitec.card.carpark.ui.controller;
 
+import com.google.common.base.Strings;
 import javafx.application.Platform;
+import javafx.beans.property.ListProperty;
+import javafx.beans.property.SimpleListProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
-import javafx.event.ActionEvent;
+import javafx.collections.ObservableList;
+import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
+import org.dongluhitec.card.carpark.dao.HibernateDao;
+import org.dongluhitec.card.carpark.domain.CardUsage;
+import org.dongluhitec.card.carpark.domain.ConnectionUsage;
+import org.dongluhitec.card.carpark.hardware.HardwareService;
 import org.dongluhitec.card.carpark.ui.Alerts;
+import org.dongluhitec.card.carpark.ui.Config;
+import org.dongluhitec.card.carpark.ui.DongluCarparkApp;
+import org.dongluhitec.card.carpark.ui.LinkDevice;
+import org.dongluhitec.card.carpark.util.FileUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.Optional;
+import java.io.IOException;
+import java.net.URL;
+import java.util.*;
 
 /**
  * 主设置窗口控制器
  * Created by panmingzhi815 on 2015/10/8 0008.
  */
-public class DongluCarparkAppController {
+public class DongluCarparkAppController implements Initializable {
+    private Logger LOGGER = LoggerFactory.getLogger(DongluCarparkAppController.class);
 
-    public ComboBox combo_ip;
-    public ComboBox combo_port;
-    public ComboBox combo_gangting;
-    public ComboBox combo_ad;
-    public ComboBox combo_validateTime;
-    public TableView deviceTable;
-    public TableView cardUsageTable;
-    public TableView connectionUsageTable;
+    public static final String CONFIG_FILEPATH = "config.data";
+    public static Config config;
+
+    public ComboBox<String> combo_ip;
+    public ComboBox<String> combo_port;
+    public ComboBox<String> combo_gangting;
+    public ComboBox<String> combo_ad;
+    public ComboBox<String> combo_validateTime;
+
+    public TableView<LinkDevice> deviceTable;
+    public TableView<CardUsage> cardUsageTable;
+    public TableView<ConnectionUsage> connectionUsageTable;
     public Button addDevice;
     public Button modifyDevice;
     public Button deleteDevice;
+    public SimpleStringProperty linkType = new SimpleStringProperty("COM");
+    public SimpleStringProperty linkAddress = new SimpleStringProperty("COM1");
+    public SimpleStringProperty deviceType = new SimpleStringProperty("进口");
+    public SimpleStringProperty deviceName = new SimpleStringProperty("12345");
+    public SimpleStringProperty deviceAddress = new SimpleStringProperty("1.1");
+    public SimpleStringProperty plateIP = new SimpleStringProperty("192.168.1.1");
 
-    public void addDevice_on_action(ActionEvent actionEvent) {
-        VBox deviceDialog = createDeviceDialog("COM", "COM1", "1.1", "192.168.1.1");
-        ButtonType addButton = new ButtonType("添加");
+    public void addDevice_on_action() {
+        linkType.setValue("COM");
+        linkAddress.setValue("COM1");
+        deviceType.setValue("进口");
+        deviceName.setValue("12345");
+        deviceAddress.setValue("1.1");
+        plateIP.setValue("192.168.1.1");
+
+        Boolean aBoolean = addDiaglog();
+        //点击取消
+        if (aBoolean == null) {
+            return;
+        }
+        //不符合条件，重新输入
+        if (aBoolean) {
+
+            LinkDevice linkDevice = new LinkDevice(linkType.get(), linkAddress.get(),deviceType.get(), deviceName.get(), deviceAddress.get(), plateIP.get());
+            ObservableList<LinkDevice> items = deviceTable.getItems();
+
+            items.add(linkDevice);
+            deviceTable.setItems(items);
+        } else {
+            addDevice_on_action();
+        }
+    }
+
+    public void modifyDevice_on_action() {
+        TableView.TableViewSelectionModel<LinkDevice> linkDeviceTableViewSelectionModel = deviceTable.selectionModelProperty().get();
+        LinkDevice selectedItem = linkDeviceTableViewSelectionModel.getSelectedItem();
+        if (selectedItem == null) {
+            Alerts.create(Alert.AlertType.INFORMATION).setTitle("提示").setHeaderText("请先选择一个设备，再开始编辑").showAndWait();
+            return;
+        }
+
+        linkType.setValue(selectedItem.getLinkType());
+        linkAddress.setValue(selectedItem.getLinkAddress());
+        deviceType.setValue(selectedItem.getDeviceType());
+        deviceName.setValue(selectedItem.getDeviceName());
+        deviceAddress.setValue(selectedItem.getDeviceAddress());
+        plateIP.setValue(selectedItem.getPlateIp());
+
+        Boolean aBoolean = addDiaglog();
+
+        //点击取消
+        if (aBoolean == null) {
+            return;
+        }
+        //不符合条件，重新输入
+        if (!aBoolean) {
+            addDevice_on_action();
+            return;
+        }
+        selectedItem.setLinkType(linkType.get());
+        selectedItem.setLinkAddress(linkAddress.get());
+        selectedItem.setDeviceType(deviceType.get());
+        selectedItem.setDeviceName(deviceName.get());
+        selectedItem.setDeviceAddress(deviceAddress.get());
+        selectedItem.setPlateIp(plateIP.get());
+
+        ObservableList<LinkDevice> linkDevices = FXCollections.observableArrayList(deviceTable.getItems());
+        ListProperty<LinkDevice> linkDeviceListProperty = new SimpleListProperty<>(linkDevices);
+        deviceTable.getItems().clear();
+        deviceTable.itemsProperty().set(linkDeviceListProperty);
+    }
+
+    public Boolean addDiaglog() {
+        VBox deviceDialog = createDeviceDialog(linkType, linkAddress, deviceType,deviceName, deviceAddress, plateIP);
+        ButtonType addButton = new ButtonType("保存");
         ButtonType cancelButton = new ButtonType("取消");
         Optional<ButtonType> buttonType = Alerts.create(Alert.AlertType.CONFIRMATION)
-                .setTitle("添加新的监听设备")
+                .setTitle("编辑基本的监听设备信息")
                 .setButtons(addButton, cancelButton)
                 .setHeaderContent(deviceDialog)
                 .setIcon(new Image(ClassLoader.getSystemResourceAsStream("image/set_64.png")))
                 .showAndWait();
-        if(!buttonType.isPresent()){
-            return;
+        if (buttonType.isPresent() && buttonType.get() == addButton) {
+            if (Strings.isNullOrEmpty(linkType.get())) {
+                Alerts.create(Alert.AlertType.ERROR).setTitle("错误").setHeaderText("连接类型未设置").showAndWait();
+                return false;
+            }
+            if (Strings.isNullOrEmpty(linkAddress.get())) {
+                Alerts.create(Alert.AlertType.ERROR).setTitle("错误").setHeaderText("连接地址未设置").showAndWait();
+                return false;
+            }
+            if (Strings.isNullOrEmpty(deviceType.get())) {
+                Alerts.create(Alert.AlertType.ERROR).setTitle("错误").setHeaderText("进出类型未设置").showAndWait();
+                return false;
+            }
+            if (Strings.isNullOrEmpty(deviceAddress.get())) {
+                Alerts.create(Alert.AlertType.ERROR).setTitle("错误").setHeaderText("设备地址未设置").showAndWait();
+                return false;
+            }
+            return true;
         }
-        if(buttonType.get() == addButton){
-            Alerts.create(Alert.AlertType.INFORMATION).setTitle("提示").setHeaderText("你点确定了").show();
-        }
+        return null;
     }
 
-    public void modifyDevice_on_action(ActionEvent actionEvent) {
-    }
-
-    public VBox createDeviceDialog(String linkTypeString,String linkAddressString,String deviceAddressString,String plateIpString){
-        ComboBox<String> linkType = new ComboBox<>(FXCollections.observableArrayList("COM","TCP"));
+    public VBox createDeviceDialog(SimpleStringProperty linkTypeString, SimpleStringProperty linkAddressString,SimpleStringProperty deviceTypeString, SimpleStringProperty deviceNameString, SimpleStringProperty deviceAddressString, SimpleStringProperty plateIpString) {
+        ComboBox<String> linkType = new ComboBox<>(FXCollections.observableArrayList("COM", "TCP"));
         linkType.setEditable(false);
-        linkType.setValue(linkTypeString);
-        TextField linkAddress = new TextField(linkAddressString);
-        TextField deviceAddress = new TextField(deviceAddressString);
-        TextField plateIp = new TextField(plateIpString);
+        linkType.setValue(linkTypeString.getValue());
+        linkType.valueProperty().bindBidirectional(linkTypeString);
+
+        TextField linkAddress = new TextField("");
+        linkAddress.textProperty().bindBidirectional(linkAddressString);
+
+        ComboBox<String> deviceType = new ComboBox<>(FXCollections.observableArrayList("进口", "出口"));
+        deviceType.setEditable(false);
+        deviceType.setValue(deviceType.getValue());
+        deviceType.valueProperty().bindBidirectional(deviceTypeString);
+
+        TextField deviceName = new TextField("");
+        deviceName.textProperty().bindBidirectional(deviceNameString);
+
+        TextField deviceAddress = new TextField("");
+        deviceAddress.textProperty().bindBidirectional(deviceAddressString);
+
+        TextField plateIp = new TextField("");
+        plateIp.textProperty().bindBidirectional(plateIpString);
 
         VBox vBox = new VBox(0);
         HBox linkType_hbox = new HBox(10);
         HBox linkAddress_hbox = new HBox(10);
+        HBox deviceType_hbox = new HBox(10);
+        HBox deviceName_hbox = new HBox(10);
         HBox deviceAddress_hbox = new HBox(10);
         HBox plateIp_hbox = new HBox(10);
 
         Label label = new Label("通讯类型");
         linkType_hbox.getChildren().addAll(label, linkType);
+
         Label label1 = new Label("通讯地址");
         linkAddress_hbox.getChildren().addAll(label1, linkAddress);
+
+        Label lable_deviceType = new Label("进出类型");
+        deviceType_hbox.getChildren().addAll(lable_deviceType, deviceType);
+
+        Label lable_deviceName = new Label("设备名称");
+        deviceName_hbox.getChildren().addAll(lable_deviceName, deviceName);
+
         Label label2 = new Label("设备地址");
         deviceAddress_hbox.getChildren().addAll(label2, deviceAddress);
+
         Label label3 = new Label("车牌识别ip");
         plateIp_hbox.getChildren().addAll(label3, plateIp);
-        vBox.getChildren().addAll(linkType_hbox,linkAddress_hbox,deviceAddress_hbox,plateIp_hbox);
 
-        Arrays.asList(label,label1,label2,label3).forEach(each->{
+        vBox.getChildren().addAll(linkType_hbox, linkAddress_hbox,deviceType_hbox,deviceName_hbox, deviceAddress_hbox, plateIp_hbox);
+
+        Arrays.asList(label, label1, label2, label3,lable_deviceName,lable_deviceType).forEach(each -> {
             each.setPrefWidth(80);
             each.setAlignment(Pos.CENTER_RIGHT);
         });
-        Arrays.asList(linkType_hbox,linkAddress_hbox,deviceAddress_hbox,plateIp_hbox).forEach(each->{
+        Arrays.asList(linkType_hbox, linkAddress_hbox, deviceAddress_hbox, plateIp_hbox,deviceName_hbox,deviceType_hbox).forEach(each -> {
             each.setAlignment(Pos.CENTER);
             VBox.setMargin(each, new Insets(15, 0, 0, 0));
         });
-        Arrays.asList(linkAddress,linkType,deviceAddress,plateIp).forEach(each->each.setPrefWidth(150));
+        Arrays.asList(linkAddress, linkType,deviceType,deviceName, deviceAddress, plateIp).forEach(each -> each.setPrefWidth(150));
 
         return vBox;
     }
 
-    public void deleteDevice_on_action(ActionEvent actionEvent) {
+    public void deleteDevice_on_action() {
+        TableView.TableViewSelectionModel<LinkDevice> linkDeviceTableViewSelectionModel = deviceTable.selectionModelProperty().get();
+        LinkDevice selectedItem = linkDeviceTableViewSelectionModel.getSelectedItem();
+        if(selectedItem == null){
+            Alerts.create(Alert.AlertType.INFORMATION).setTitle("错误").setHeaderText("请先选择一个设备").showAndWait();
+            return;
+        }
+        deviceTable.getItems().remove(selectedItem);
     }
 
-    public void refresh_cardUsage_on_action(ActionEvent actionEvent) {
+    public void refresh_cardUsage_on_action() {
+        List<String> columns = Arrays.asList("table_id","identifier","deviceName","databaseTime");
+        for (int i = 0; i < columns.size(); i++) {
+            cardUsageTable.getColumns().get(i).setCellValueFactory(new PropertyValueFactory(columns.get(i)));
+        }
+
+        HibernateDao hibernateDao = new HibernateDao();
+        hibernateDao.deleteLeft(CardUsage.class,1000);
+        List<CardUsage> list = hibernateDao.list(CardUsage.class, 0, 1000);
+        ObservableList<CardUsage> cardUsages = FXCollections.observableArrayList(list);
+        cardUsageTable.setItems(cardUsages);
     }
 
-    public void refresh_connectionUsage_on_action(ActionEvent actionEvent) {
+    public void refresh_connectionUsage_on_action() {
+        List<String> columns = Arrays.asList("table_id","direction","shortContent");
+        for (int i = 0; i < columns.size(); i++) {
+            cardUsageTable.getColumns().get(i).setCellValueFactory(new PropertyValueFactory(columns.get(i)));
+        }
+
+        HibernateDao hibernateDao = new HibernateDao();
+        hibernateDao.deleteLeft(ConnectionUsage.class,1000);
+        List<ConnectionUsage> list = hibernateDao.list(ConnectionUsage.class, 0, 1000);
+        ObservableList<ConnectionUsage> cardUsages = FXCollections.observableArrayList(list);
+        connectionUsageTable.setItems(cardUsages);
     }
 
-    public void exit_on_action(ActionEvent actionEvent) {
+    public void exit_on_action() {
         Platform.exit();
         System.exit(1);
     }
 
-    public void menu_about_on_action(ActionEvent actionEvent) {
+    public void menu_about_on_action() {
+        VBox vBox = new VBox(10);
+        vBox.setPadding(new Insets(30, 30, 30, 30));
+
+        ArrayList<String> labels = new ArrayList<>();
+        labels.add("公司名称：深圳市东陆高新实业有限公司");
+        labels.add("软件名称：停车场对接底层");
+        labels.add("软件版本：1.0.0.0");
+        labels.add("授权组织：" + DongluCarparkApp.softPrivilegeGroupName);
+        labels.add("技术支持：26992770");
+
+        labels.forEach(each -> {
+            HBox hBox = new HBox(10);
+            Label value = new Label(each);
+            value.setFont(new Font(15));
+            hBox.getChildren().add(value);
+
+            vBox.getChildren().add(hBox);
+        });
+
+        Alerts.create(Alert.AlertType.INFORMATION).setTitle("关于").setHeaderContent(vBox).showAndWait();
 
     }
 
-    public void menu_startFlowSystem_on_action(ActionEvent actionEvent) {
+    public void menu_startFlowSystem_on_action() {
 
     }
 
-    public void rightnowUse_on_action(ActionEvent actionEvent) {
+    public void rightNowUse_on_action() {
+        if (Strings.isNullOrEmpty(combo_ip.getValue())) {
+            Alerts.create(Alert.AlertType.ERROR).setTitle("错误").setHeaderText("数据接收ip未设置").showAndWait();
+            return;
+        }
+        if (Strings.isNullOrEmpty(combo_port.getValue())) {
+            Alerts.create(Alert.AlertType.ERROR).setTitle("错误").setHeaderText("接收端口未设置").showAndWait();
+            return;
+        }
+        if (Strings.isNullOrEmpty(combo_gangting.getValue())) {
+            Alerts.create(Alert.AlertType.ERROR).setTitle("错误").setHeaderText("岗亭名称未设置").showAndWait();
+            return;
+        }
+        if (Strings.isNullOrEmpty(combo_ad.getValue())) {
+            Alerts.create(Alert.AlertType.ERROR).setTitle("错误").setHeaderText("广告语未设置").showAndWait();
+            return;
+        }
+        if (Strings.isNullOrEmpty(combo_validateTime.getValue())) {
+            Alerts.create(Alert.AlertType.ERROR).setTitle("错误").setHeaderText("自动校时设置").showAndWait();
+            return;
+        }
+
+        String ip;
+        Integer port;
+        String gangting;
+        String ad;
+        Integer validateTime;
+        try {
+            ip = combo_ip.getValue();
+            port = Integer.valueOf(combo_port.getValue());
+            gangting = combo_gangting.getValue();
+            ad = combo_ad.getValue();
+            validateTime = Integer.valueOf(combo_validateTime.getValue());
+        } catch (NumberFormatException e) {
+            Alerts.create(Alert.AlertType.ERROR).setTitle("错误").setHeaderText("数据格式不正确").setContentText(e.getMessage()).showAndWait();
+            return;
+        }
+
+        ObservableList<LinkDevice> items = deviceTable.getItems();
+
+        Config config = new Config(ip, port, gangting, ad, validateTime);
+        config.setLinkDeviceList(items);
+        try {
+            FileUtil.writeObjectToFile(config, CONFIG_FILEPATH);
+            Alerts.create(Alert.AlertType.INFORMATION).setTitle("提示").setHeaderText("保存配置成功").show();
+            DongluCarparkAppController.config = config;
+            HardwareService.hasSend = false;
+        } catch (IOException e) {
+            Alerts.create(Alert.AlertType.ERROR).setTitle("错误").setHeaderText("保存配置文件出错").setContentText(e.getMessage()).show();
+        }
+    }
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        List<String> columnNames = Arrays.asList("linkType", "linkAddress","deviceType","deviceName", "deviceAddress", "plateIp","deviceVersion");
+        for (int i = 0; i < columnNames.size(); i++) {
+            deviceTable.getColumns().get(i).setCellValueFactory(new PropertyValueFactory(columnNames.get(i)));
+        }
+
+        try {
+            Object o = FileUtil.readObjectFromFile(CONFIG_FILEPATH);
+            if (o == null) {
+                return;
+            }
+            this.config = (Config) o;
+
+            combo_ip.setValue(Strings.nullToEmpty(config.getReceiveIp()));
+            combo_port.setValue(String.valueOf(config.getReceivePort()));
+            combo_gangting.setValue(config.getGangtingName());
+            combo_ad.setValue(config.getAd());
+            combo_validateTime.setValue(String.valueOf(config.getValidateTimeLength()));
+
+            deviceTable.setItems(FXCollections.observableArrayList(config.getLinkDeviceList()));
+        } catch (IOException e) {
+            LOGGER.error("读取配置文件出错", e);
+            Alerts.create(Alert.AlertType.ERROR).setTitle("错误").setHeaderText("读取配置文件出错").setContentText(e.getMessage()).showAndWait();
+        }
 
     }
 }

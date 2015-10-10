@@ -11,10 +11,10 @@ import java.util.Map;
 
 public class MessageUtil {
 	
-	private static Map<String,Message<MessageBody>> commandMap = new HashMap<String,Message<MessageBody>>();
+	private static Map<String,Message<MessageBody>> commandMap = new HashMap<>();
 	
 	public static Message<?> createOpenDoorMsg(Device device,OpenDoorEnum openDoorEnum) {
-		String key = new StringBuffer().append(device.toString()).append(openDoorEnum).append("createOpenDoorMsg").toString();
+		String key = device.toString() + openDoorEnum + "createOpenDoorMsg";
 		Message<MessageBody> message = commandMap.get(key);
 		if(message != null){
 			return message;
@@ -26,13 +26,13 @@ public class MessageUtil {
 		SimpleBody sb = new SimpleBody();
 		sb.setSimpleBody((byte)openDoorEnum.getI());
 		
-		Message<MessageBody> msg = new Message<MessageBody>(mh, sb);
+		Message<MessageBody> msg = new Message<>(mh, sb);
 		commandMap.put(key, msg);
 		return msg;
 	}
 
 	public static Message<?> createReadNowRecordMsg(Device device) {
-		String key = new StringBuffer().append(device.toString()).append("createReadNowRecordMsg").toString();
+		String key = device.toString() + "createReadNowRecordMsg";
 		Message<MessageBody> message = commandMap.get(key);
 		if(message != null){
 			return message;
@@ -42,13 +42,13 @@ public class MessageUtil {
 		serialDeviceAddress.setAddress(device.getArea());
 		MessageHeader mh = new MessageHeader(serialDeviceAddress,DirectonType.请求,MessageConstance.Message_ReadNowRecord, EmptyBody.LENGTH);
 		EmptyBody sb = new EmptyBody();
-		Message<MessageBody> msg = new Message<MessageBody>(mh, sb);
+		Message<MessageBody> msg = new Message<>(mh, sb);
 		commandMap.put(key, msg);
 		return msg;
 	}
 	
 	public static Message<?> createScreenVoiceDoorMsg(Device device, int screenID, int voice, int font, int door, String text) {
-		String key = new StringBuffer().append(device.toString()).append(screenID).append(voice).append(font).append(door).append(text).append("createScreenVoiceDoorMsg").toString();
+		String key = device.toString() + screenID + voice + font + door + text + "createScreenVoiceDoorMsg";
 		Message<MessageBody> message = commandMap.get(key);
 		if(message != null){
 			return message;
@@ -64,7 +64,7 @@ public class MessageUtil {
 		sb.setVoice(voice);
 		sb.setText(text);
 		
-		Message<MessageBody> msg = new Message<MessageBody>(mh, sb);
+		Message<MessageBody> msg = new Message<>(mh, sb);
 		commandMap.put(key, msg);
 		return msg;
 	}
@@ -76,30 +76,28 @@ public class MessageUtil {
 		SerialDeviceAddress serialDeviceAddress = new SerialDeviceAddress();
 		serialDeviceAddress.setAddress(device.getArea());
 		MessageHeader mh = new MessageHeader(serialDeviceAddress,DirectonType.请求,MessageConstance.Message_SetTime,SetDateTimeBody.LENGTH);
-		
-		Message<MessageBody> msg = new Message<MessageBody>(mh, setDateTimeBody);
-		return msg;
+
+		return new Message<MessageBody>(mh, setDateTimeBody);
 	}
 	
-	public static Message<?> creatADScreenMsg(Device device, String adStr) {
-		String key = new StringBuffer().append(device.toString()).append(adStr).toString();
+	public static Message<?> createADScreenMsg(Device device, String adStr) {
+		String key = device.toString() + adStr;
 		Message<MessageBody> message = commandMap.get(key);
 		if(message != null){
 			return message;
 		}
-		ADScreenBody adsb = new ADScreenBody();
-		adsb.setText(adStr);
+		ADScreenBody adScreenBody = new ADScreenBody();
+		adScreenBody.setText(adStr);
 
 		SerialDeviceAddress serialDeviceAddress = new SerialDeviceAddress();
 		serialDeviceAddress.setAddress(device.getArea());
 		MessageHeader mh = new MessageHeader(serialDeviceAddress,DirectonType.请求,MessageConstance.Message_AD,ADScreenBody.LENGTH);
-		
-		Message<MessageBody> msg = new Message<MessageBody>(mh, adsb);
-		return msg;
+
+		return new Message<MessageBody>(mh, adScreenBody);
 	}
 
-	public static Message<?> creatVersionMsg(Device device) {
-		String key = new StringBuffer().append(device.toString()).append("creatVersionMsg").toString();
+	public static Message<?> createVersionMsg(Device device) {
+		String key = device.toString() + "createVersionMsg";
 		Message<MessageBody> message = commandMap.get(key);
 		if(message != null){
 			return message;
@@ -110,7 +108,6 @@ public class MessageUtil {
 		serialDeviceAddress.setAddress(device.getArea());
 		MessageHeader mh = new MessageHeader(serialDeviceAddress,DirectonType.请求,MessageConstance.Message_ReadVersion,EmptyBody.LENGTH);
 
-		Message<MessageBody> msg = new Message<MessageBody>(mh, eb);
-		return msg;
+		return new Message<MessageBody>(mh, eb);
 	}
 }

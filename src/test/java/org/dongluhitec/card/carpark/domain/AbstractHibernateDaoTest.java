@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
- * ²âÊÔderbyÊı¾İ¿â
+ * æµ‹è¯•derbyæ•°æ®åº“
  * Created by panmingzhi815 on 2015/10/8 0008.
  */
 public class AbstractHibernateDaoTest {
@@ -36,7 +36,7 @@ public class AbstractHibernateDaoTest {
 
         cardUsage.setIdentifier("46BE23F2");
         cardUsage.setDatabaseTime(new Date());
-        cardUsage.setDeviceTime(new Date());
+        cardUsage.setDeviceName("12345");
         session.save(cardUsage);
 
         transaction.commit();
@@ -58,7 +58,7 @@ public class AbstractHibernateDaoTest {
             CardUsage cardUsage = new CardUsage();
             cardUsage.setIdentifier("46BE23F2");
             cardUsage.setDatabaseTime(new Date());
-            cardUsage.setDeviceTime(new Date());
+            cardUsage.setDeviceName("12345");
             abstractHibernateDao.save(cardUsage);
         }
         System.out.println(TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start));

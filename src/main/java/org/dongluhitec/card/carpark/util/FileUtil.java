@@ -14,7 +14,7 @@ public class FileUtil {
             ObjectOutputStream oos = new ObjectOutputStream(fos);){
             oos.writeObject(obj);
         }catch(Exception e){
-            throw new IOException("Ğ´Èë¶ÔÏóÊı¾İÊ§°Ü:"+filePath,e);
+            throw new IOException("ä¿å­˜æ•°æ®å¯¹è±¡åˆ°æ–‡ä»¶æ—¶å‘ç”Ÿé”™è¯¯:"+filePath,e);
         }
     }
 
@@ -27,7 +27,7 @@ public class FileUtil {
             ObjectInputStream ois = new ObjectInputStream(fis)){
             return ois.readObject();
         }catch(Exception e){
-            throw new IOException("¶ÁÈ¡¶ÔÏóÊı¾İÊ§°Ü:"+filePath,e);
+            throw new IOException("è¯»å–æ•°æ®å¯¹è±¡æ—¶å‘ç”Ÿé”™è¯¯:"+filePath,e);
         }
     }
 

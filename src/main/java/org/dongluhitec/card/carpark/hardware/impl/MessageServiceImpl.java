@@ -126,7 +126,7 @@ public class MessageServiceImpl implements MessageService {
 	@Override
 	public ListenableFuture<Boolean> setAD(final Device device, String adStr) {
 		LOGGER.debug("carpark's set ad:{} for:{}" , adStr, device);
-		final Message<?> msg = MessageUtil.creatADScreenMsg(device, adStr);
+		final Message<?> msg = MessageUtil.createADScreenMsg(device, adStr);
 		ListenableFuture<Boolean> submit = listeningDecorator.submit(new Callable<Boolean>() {
 			@Override
 			public Boolean call() throws Exception {
@@ -145,7 +145,7 @@ public class MessageServiceImpl implements MessageService {
 	@Override
 	public ListenableFuture<String> readVersion(final Device device) {
 		LOGGER.debug("carpark's read version for:{}" , device);
-		final Message<?> msg = MessageUtil.creatVersionMsg(device);
+		final Message<?> msg = MessageUtil.createVersionMsg(device);
 		ListenableFuture<String> submit = listeningDecorator.submit(new Callable<String>() {
 			@Override
 			public String call() throws Exception {

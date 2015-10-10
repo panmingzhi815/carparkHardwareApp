@@ -8,52 +8,22 @@ import java.util.List;
  * Created by panmingzhi815 on 2015/10/9 0009.
  */
 public class Config implements Serializable {
-    class LinkDevice implements Serializable{
-        private String linkType;
-        private String linkAddress;
-        private String deviceAddress;
-        private String plateIp;
-
-        public String getLinkType() {
-            return linkType;
-        }
-
-        public void setLinkType(String linkType) {
-            this.linkType = linkType;
-        }
-
-        public String getLinkAddress() {
-            return linkAddress;
-        }
-
-        public void setLinkAddress(String linkAddress) {
-            this.linkAddress = linkAddress;
-        }
-
-        public String getDeviceAddress() {
-            return deviceAddress;
-        }
-
-        public void setDeviceAddress(String deviceAddress) {
-            this.deviceAddress = deviceAddress;
-        }
-
-        public String getPlateIp() {
-            return plateIp;
-        }
-
-        public void setPlateIp(String plateIp) {
-            this.plateIp = plateIp;
-        }
-    }
 
     private String receiveIp;
-    private String receivePort;
+    private Integer receivePort;
     private String gangtingName;
     private String ad;
-    private Long validateTimeLength;
+    private Integer validateTimeLength;
 
     private List<LinkDevice> linkDeviceList = new ArrayList<>();
+
+    public Config(String receiveIp, Integer receivePort, String gangtingName, String ad, Integer validateTimeLength) {
+        this.receiveIp = receiveIp;
+        this.receivePort = receivePort;
+        this.gangtingName = gangtingName;
+        this.ad = ad;
+        this.validateTimeLength = validateTimeLength;
+    }
 
     public String getReceiveIp() {
         return receiveIp;
@@ -63,11 +33,11 @@ public class Config implements Serializable {
         this.receiveIp = receiveIp;
     }
 
-    public String getReceivePort() {
+    public Integer getReceivePort() {
         return receivePort;
     }
 
-    public void setReceivePort(String receivePort) {
+    public void setReceivePort(Integer receivePort) {
         this.receivePort = receivePort;
     }
 
@@ -87,11 +57,11 @@ public class Config implements Serializable {
         this.ad = ad;
     }
 
-    public Long getValidateTimeLength() {
+    public Integer getValidateTimeLength() {
         return validateTimeLength;
     }
 
-    public void setValidateTimeLength(Long validateTimeLength) {
+    public void setValidateTimeLength(Integer validateTimeLength) {
         this.validateTimeLength = validateTimeLength;
     }
 
@@ -100,6 +70,7 @@ public class Config implements Serializable {
     }
 
     public void setLinkDeviceList(List<LinkDevice> linkDeviceList) {
-        this.linkDeviceList = linkDeviceList;
+        this.linkDeviceList.clear();
+        this.linkDeviceList.addAll(linkDeviceList);
     }
 }

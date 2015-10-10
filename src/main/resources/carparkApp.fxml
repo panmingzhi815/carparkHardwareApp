@@ -1,140 +1,135 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import javafx.geometry.*?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-
-<VBox minHeight="400.0" nodeOrientation="LEFT_TO_RIGHT" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.dongluhitec.card.carpark.ui.controller.DongluCarparkAppController">
-   <children>
-       <MenuBar VBox.vgrow="NEVER">
-          <menus>
-              <Menu mnemonicParsing="false" text="程序">
-                 <items>
-                     <MenuItem mnemonicParsing="false" text="关于" onAction="#menu_about_on_action" />
-                     <MenuItem disable="true" mnemonicParsing="false" text="随系统自动启动" onAction="#menu_startFlowSystem_on_action" />
-                     <MenuItem mnemonicParsing="false" onAction="#exit_on_action" text="退出"  />
-                 </items>
-              </Menu>
-          </menus>
-       </MenuBar>
-       <VBox VBox.vgrow="ALWAYS">
-          <children>
-              <GridPane>
-                  <columnConstraints>
-                      <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="84.0" />
-                      <ColumnConstraints hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="130.0" />
-                      <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="66.0" />
-                      <ColumnConstraints hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="150.0" />
-                  <ColumnConstraints halignment="CENTER" maxWidth="-Infinity" minWidth="10.0" prefWidth="150.0" />
-                  </columnConstraints>
-                  <rowConstraints>
-                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                  </rowConstraints>
-                  <VBox.margin>
-                      <Insets />
-                  </VBox.margin>
-                 <children>
-                     <Label text="数据接收ip : " />
-                     <ComboBox fx:id="combo_ip" editable="true" prefWidth="150.0" promptText="127.0.0.1" GridPane.columnIndex="1" />
-                     <ComboBox fx:id="combo_port" editable="true" prefWidth="150.0" promptText="9123" GridPane.columnIndex="3" />
-                     <Label text="接收端口 : " GridPane.columnIndex="2" />
-                     <Label text="岗亭名称 : " GridPane.rowIndex="1" />
-                     <Label text="广告语 : " GridPane.columnIndex="2" GridPane.rowIndex="1" />
-                     <ComboBox fx:id="combo_gangting" editable="true" prefWidth="150.0" promptText="岗亭1" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                     <ComboBox fx:id="combo_ad" editable="true" prefWidth="150.0" promptText="深圳市东陆高新实业有限公司" GridPane.columnIndex="3" GridPane.rowIndex="1" />
-                     <Label text="自动校时 : " GridPane.rowIndex="2" />
-                     <ComboBox fx:id="combo_validateTime" editable="true" prefWidth="150.0" promptText="不校时" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                  <Button mnemonicParsing="false" text="立即生效" GridPane.columnIndex="4" GridPane.rowIndex="1" onAction="#rightnowUse_on_action" />
-                 </children>
-              </GridPane>
-              <TabPane tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
-                  <VBox.margin>
-                      <Insets bottom="1.0" left="1.0" right="1.0" top="1.0" />
-                  </VBox.margin>
-                 <tabs>
-                     <Tab text="设备列表">
-                        <content>
-                            <VBox prefHeight="254.0" prefWidth="560.0">
-                               <children>
-                                   <HBox alignment="BOTTOM_LEFT" prefHeight="20.0" spacing="5.0">
-                                       <VBox.margin>
-                                           <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
-                                       </VBox.margin>
-                                      <children>
-                                          <Label text="设备监控列表" />
-                                          <Pane HBox.hgrow="ALWAYS" />
-                                          <Button fx:id="addDevice" mnemonicParsing="false" onAction="#addDevice_on_action" text="添加设备" />
-                                          <Button fx:id="modifyDevice" mnemonicParsing="false" onAction="#modifyDevice_on_action" text="修改设备" />
-                                          <Button fx:id="deleteDevice" mnemonicParsing="false" onAction="#deleteDevice_on_action" text="删除设备" />
-                                      </children>
-                                   </HBox>
-                                   <TableView fx:id="deviceTable" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
-                                       <columns>
-                                           <TableColumn maxWidth="83.0" minWidth="-Infinity" prefWidth="63.0" text="通讯类型" />
-                                           <TableColumn prefWidth="150.0" text="通讯地址" />
-                                           <TableColumn minWidth="0.0" prefWidth="98.0" text="设备地址" />
-                                           <TableColumn prefWidth="222.0" text="车牌识别设备IP" />
-                                       </columns>
-                                       <VBox.margin>
-                                           <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
-                                       </VBox.margin>
-                                   </TableView>
-                               </children>
-                            </VBox>
-                        </content>
-                     </Tab>
-                     <Tab text="历史记录">
-                        <content>
-                            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-                               <children>
-                                   <TableView fx:id="cardUsageTable" layoutX="7.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                                       <columns>
-                                           <TableColumn prefWidth="75.0" text="流水号" />
-                                           <TableColumn prefWidth="120.0" text="卡片内码" />
-                                           <TableColumn prefWidth="181.0" text="刷卡时间" />
-                                           <TableColumn prefWidth="181.0" text="采集时间" />
-                                       </columns>
-                                       <contextMenu>
-                                           <ContextMenu>
-                                               <items>
-                                                   <MenuItem mnemonicParsing="false" onAction="#refresh_cardUsage_on_action" text="刷新" />
-                                               </items>
-                                           </ContextMenu>
-                                       </contextMenu>
-                                   </TableView>
-                               </children>
-                            </AnchorPane>
-                        </content>
-                     </Tab>
-                     <Tab text="对接记录">
-                        <content>
-                            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-                               <children>
-                                   <TableView fx:id="connectionUsageTable" layoutX="7.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                                       <columns>
-                                           <TableColumn prefWidth="75.0" text="流水号" />
-                                           <TableColumn prefWidth="120.0" text="收发类型" />
-                                           <TableColumn prefWidth="181.0" text="内容概要" />
-                                           <TableColumn prefWidth="181.0" text="具体内容" />
-                                       </columns>
-                                       <contextMenu>
-                                           <ContextMenu>
-                                               <items>
-                                                   <MenuItem mnemonicParsing="false" onAction="#refresh_connectionUsage_on_action" text="刷新" />
-                                               </items>
-                                           </ContextMenu>
-                                       </contextMenu>
-                                   </TableView>
-                               </children>
-                            </AnchorPane>
-                        </content>
-                     </Tab>
-                 </tabs>
-              </TabPane>
-          </children>
-       </VBox>
-   </children>
+<VBox minHeight="400.0" nodeOrientation="LEFT_TO_RIGHT" xmlns="http://javafx.com/javafx/8"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="org.dongluhitec.card.carpark.ui.controller.DongluCarparkAppController">
+    <MenuBar VBox.vgrow="NEVER">
+        <Menu mnemonicParsing="false" text="程序">
+            <MenuItem mnemonicParsing="false" text="关于" onAction="#menu_about_on_action"/>
+            <MenuItem disable="true" mnemonicParsing="false" text="随系统自动启动"
+                      onAction="#menu_startFlowSystem_on_action"/>
+            <MenuItem mnemonicParsing="false" onAction="#exit_on_action" text="退出"/>
+        </Menu>
+    </MenuBar>
+    <VBox VBox.vgrow="ALWAYS">
+        <GridPane>
+            <columnConstraints>
+                <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="-Infinity"
+                                   prefWidth="84.0"/>
+                <ColumnConstraints hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="130.0"/>
+                <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="-Infinity"
+                                   prefWidth="66.0"/>
+                <ColumnConstraints hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="150.0"/>
+                <ColumnConstraints halignment="CENTER" maxWidth="-Infinity" minWidth="10.0" prefWidth="150.0"/>
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+            </rowConstraints>
+            <VBox.margin>
+                <Insets/>
+            </VBox.margin>
+            <Label text="数据接收ip : "/>
+            <ComboBox fx:id="combo_ip" editable="true" prefWidth="150.0" promptText="127.0.0.1"
+                      GridPane.columnIndex="1"/>
+            <ComboBox fx:id="combo_port" editable="true" prefWidth="150.0" promptText="9123"
+                      GridPane.columnIndex="3"/>
+            <Label text="接收端口 : " GridPane.columnIndex="2"/>
+            <Label text="岗亭名称 : " GridPane.rowIndex="1"/>
+            <Label text="广告语 : " GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+            <ComboBox fx:id="combo_gangting" editable="true" prefWidth="150.0" promptText="岗亭1"
+                      GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+            <ComboBox fx:id="combo_ad" editable="true" prefWidth="150.0" promptText="深圳市东陆高新实业有限公司"
+                      GridPane.columnIndex="3" GridPane.rowIndex="1"/>
+            <Label text="自动校时 : " GridPane.rowIndex="2"/>
+            <ComboBox fx:id="combo_validateTime" editable="true" prefWidth="150.0" promptText="不校时"
+                      GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+            <Button mnemonicParsing="false" text="立即生效" GridPane.columnIndex="4" GridPane.rowIndex="1"
+                    onAction="#rightNowUse_on_action"/>
+        </GridPane>
+        <TabPane tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
+            <VBox.margin>
+                <Insets bottom="1.0" left="1.0" right="1.0" top="1.0"/>
+            </VBox.margin>
+            <Tab text="设备列表">
+                <VBox prefHeight="254.0" prefWidth="560.0">
+                    <HBox alignment="BOTTOM_LEFT" prefHeight="20.0" spacing="5.0">
+                        <VBox.margin>
+                            <Insets bottom="2.0" left="2.0" right="2.0" top="2.0"/>
+                        </VBox.margin>
+                        <Label text="设备监控列表"/>
+                        <Pane HBox.hgrow="ALWAYS"/>
+                        <Button fx:id="addDevice" mnemonicParsing="false"
+                                onAction="#addDevice_on_action" text="添加设备"/>
+                        <Button fx:id="modifyDevice" mnemonicParsing="false"
+                                onAction="#modifyDevice_on_action" text="修改设备"/>
+                        <Button fx:id="deleteDevice" mnemonicParsing="false"
+                                onAction="#deleteDevice_on_action" text="删除设备"/>
+                    </HBox>
+                    <TableView fx:id="deviceTable" prefHeight="200.0" prefWidth="200.0"
+                               VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn maxWidth="83.0" minWidth="-Infinity" prefWidth="63.0" text="通讯类型"/>
+                            <TableColumn prefWidth="150.0" text="通讯地址"/>
+                            <TableColumn minWidth="0.0" prefWidth="98.0" text="进出类型"/>
+                            <TableColumn minWidth="0.0" prefWidth="98.0" text="设备名称"/>
+                            <TableColumn minWidth="0.0" prefWidth="98.0" text="设备地址"/>
+                            <TableColumn minWidth="0.0" prefWidth="98.0"  text="车牌识别设备IP"/>
+                            <TableColumn minWidth="0.0" prefWidth="98.0"  text="设备版本号"/>
+                        </columns>
+                        <VBox.margin>
+                            <Insets bottom="2.0" left="2.0" right="2.0" top="2.0"/>
+                        </VBox.margin>
+                    </TableView>
+                </VBox>
+            </Tab>
+            <Tab text="历史记录">
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                    <TableView fx:id="cardUsageTable" layoutX="7.0" prefHeight="200.0" prefWidth="200.0"
+                               AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                               AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                        <columns>
+                            <TableColumn prefWidth="75.0" text="流水号"/>
+                            <TableColumn prefWidth="120.0" text="卡片内码"/>
+                            <TableColumn prefWidth="181.0" text="设备名称"/>
+                            <TableColumn prefWidth="181.0" text="采集时间"/>
+                        </columns>
+                        <contextMenu>
+                            <ContextMenu>
+                                <items>
+                                    <MenuItem mnemonicParsing="false"
+                                              onAction="#refresh_cardUsage_on_action" text="刷新"/>
+                                </items>
+                            </ContextMenu>
+                        </contextMenu>
+                    </TableView>
+                </AnchorPane>
+            </Tab>
+            <Tab text="对接记录">
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                    <TableView fx:id="connectionUsageTable" layoutX="7.0" prefHeight="200.0"
+                               prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                               AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                        <columns>
+                            <TableColumn prefWidth="75.0" text="流水号"/>
+                            <TableColumn prefWidth="120.0" text="收发类型"/>
+                            <TableColumn prefWidth="181.0" text="内容概要"/>
+                        </columns>
+                        <contextMenu>
+                            <ContextMenu>
+                                <items>
+                                    <MenuItem mnemonicParsing="false"
+                                              onAction="#refresh_connectionUsage_on_action" text="刷新"/>
+                                </items>
+                            </ContextMenu>
+                        </contextMenu>
+                    </TableView>
+                </AnchorPane>
+            </Tab>
+        </TabPane>
+    </VBox>
 </VBox>

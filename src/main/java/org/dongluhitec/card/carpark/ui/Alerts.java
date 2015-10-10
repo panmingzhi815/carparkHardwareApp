@@ -50,6 +50,12 @@ public class Alerts {
         return this;
     }
 
+    public Alerts setExpandableContent(Node node) {
+        alert.getDialogPane().setExpanded(true);
+        alert.getDialogPane().setExpandableContent(node);
+        return this;
+    }
+
     public Optional<ButtonType> showAndWait() {
         return alert.showAndWait();
     }

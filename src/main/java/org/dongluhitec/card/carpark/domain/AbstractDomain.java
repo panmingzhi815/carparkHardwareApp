@@ -7,7 +7,7 @@ import javax.persistence.MappedSuperclass;
 import java.io.Serializable;
 
 /**
- * 数据库基类
+ * 鏁版嵁瀵硅薄鍩虹被
  * Created by panmingzhi815 on 2015/10/8 0008.
  */
 @MappedSuperclass
