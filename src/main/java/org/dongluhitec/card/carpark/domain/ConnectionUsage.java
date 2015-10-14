@@ -8,6 +8,9 @@ import javax.persistence.*;
  */
 @Entity
 public class ConnectionUsage extends AbstractDomain{
+
+    private static final long serialVersionUID = 2L;
+
     @Column
     private ConnectionDirection direction;
     @Column

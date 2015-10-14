@@ -1,6 +1,7 @@
 package org.dongluhitec.card.carpark.domain;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -9,6 +10,9 @@ import java.util.Date;
  */
 @Entity
 public class CardUsage extends AbstractDomain{
+
+    private static final long serialVersionUID = 1L;
+
     @Column
     private String identifier;
     @Column

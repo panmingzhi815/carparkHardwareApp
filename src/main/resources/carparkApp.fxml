@@ -34,19 +34,19 @@
                 <Insets/>
             </VBox.margin>
             <Label text="数据接收ip : "/>
-            <ComboBox fx:id="combo_ip" editable="true" prefWidth="150.0" promptText="127.0.0.1"
+            <ComboBox fx:id="combo_ip" editable="true" prefWidth="150.0" promptText="127.0.0.1" value="127.0.0.1"
                       GridPane.columnIndex="1"/>
-            <ComboBox fx:id="combo_port" editable="true" prefWidth="150.0" promptText="9123"
+            <ComboBox fx:id="combo_port" editable="true" prefWidth="150.0" promptText="8129" value="8129"
                       GridPane.columnIndex="3"/>
             <Label text="接收端口 : " GridPane.columnIndex="2"/>
             <Label text="岗亭名称 : " GridPane.rowIndex="1"/>
             <Label text="广告语 : " GridPane.columnIndex="2" GridPane.rowIndex="1"/>
-            <ComboBox fx:id="combo_gangting" editable="true" prefWidth="150.0" promptText="岗亭1"
+            <ComboBox fx:id="combo_gangting" editable="true" prefWidth="150.0" promptText="岗亭1" value="岗亭1"
                       GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-            <ComboBox fx:id="combo_ad" editable="true" prefWidth="150.0" promptText="深圳市东陆高新实业有限公司"
+            <ComboBox fx:id="combo_ad" editable="true" prefWidth="150.0" promptText="深圳市东陆高新实业有限公司" value="深圳市东陆高新实业有限公司"
                       GridPane.columnIndex="3" GridPane.rowIndex="1"/>
             <Label text="自动校时 : " GridPane.rowIndex="2"/>
-            <ComboBox fx:id="combo_validateTime" editable="true" prefWidth="150.0" promptText="不校时"
+            <ComboBox fx:id="combo_validateTime" editable="true" prefWidth="150.0" promptText="不校时" value="30"
                       GridPane.columnIndex="1" GridPane.rowIndex="2"/>
             <Button mnemonicParsing="false" text="立即生效" GridPane.columnIndex="4" GridPane.rowIndex="1"
                     onAction="#rightNowUse_on_action"/>
@@ -101,8 +101,8 @@
                         <contextMenu>
                             <ContextMenu>
                                 <items>
-                                    <MenuItem mnemonicParsing="false"
-                                              onAction="#refresh_cardUsage_on_action" text="刷新"/>
+                                    <MenuItem mnemonicParsing="false" onAction="#refresh_cardUsage_on_action" text="刷新"/>
+                                    <MenuItem mnemonicParsing="false" onAction="#clean_cardUsage_on_action" text="清除"/>
                                 </items>
                             </ContextMenu>
                         </contextMenu>

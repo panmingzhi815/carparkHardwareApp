@@ -162,7 +162,7 @@ public class HardwareService {
 								hibernateDao.save(cardUsage);
 
 								HardwareUtil.sendCardNO(session, carparkNowRecord.getCardID(),carparkNowRecord.getReaderID()+"", device.getName());
-								HardwareUtil.controlSpeed(start, 3000);
+								HardwareUtil.controlSpeed(start, 1000);
 							}
 							EventBusUtil.post(new EventInfo(EventInfo.EventType.硬件通讯正常, "硬件通讯恢复正常"));
 						}catch(Exception e){

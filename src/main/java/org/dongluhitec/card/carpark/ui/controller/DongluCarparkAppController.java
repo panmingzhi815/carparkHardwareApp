@@ -1,12 +1,14 @@
 package org.dongluhitec.card.carpark.ui.controller;
 
 import com.google.common.base.Strings;
+import com.sun.javafx.stage.StageHelper;
 import javafx.application.Platform;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -16,6 +18,7 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
+import javafx.stage.Stage;
 import org.dongluhitec.card.carpark.dao.HibernateDao;
 import org.dongluhitec.card.carpark.domain.CardUsage;
 import org.dongluhitec.card.carpark.domain.ConnectionUsage;
@@ -31,6 +34,9 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 主设置窗口控制器
@@ -60,6 +66,8 @@ public class DongluCarparkAppController implements Initializable {
     public SimpleStringProperty deviceName = new SimpleStringProperty("12345");
     public SimpleStringProperty deviceAddress = new SimpleStringProperty("1.1");
     public SimpleStringProperty plateIP = new SimpleStringProperty("192.168.1.1");
+    private static ScheduledExecutorService scheduledExecutorService;
+    private static ScheduledExecutorService scheduledExecutorService1;
 
     public void addDevice_on_action() {
         linkType.setValue("COM");
@@ -238,11 +246,7 @@ public class DongluCarparkAppController implements Initializable {
             cardUsageTable.getColumns().get(i).setCellValueFactory(new PropertyValueFactory(columns.get(i)));
         }
 
-        HibernateDao hibernateDao = new HibernateDao();
-        hibernateDao.deleteLeft(CardUsage.class,1000);
-        List<CardUsage> list = hibernateDao.list(CardUsage.class, 0, 1000);
-        ObservableList<CardUsage> cardUsages = FXCollections.observableArrayList(list);
-        cardUsageTable.setItems(cardUsages);
+        autoRefreshCardUsage();
     }
 
     public void refresh_connectionUsage_on_action() {
@@ -250,13 +254,43 @@ public class DongluCarparkAppController implements Initializable {
         for (int i = 0; i < columns.size(); i++) {
             cardUsageTable.getColumns().get(i).setCellValueFactory(new PropertyValueFactory(columns.get(i)));
         }
-
-        HibernateDao hibernateDao = new HibernateDao();
-        hibernateDao.deleteLeft(ConnectionUsage.class,1000);
-        List<ConnectionUsage> list = hibernateDao.list(ConnectionUsage.class, 0, 1000);
-        ObservableList<ConnectionUsage> cardUsages = FXCollections.observableArrayList(list);
-        connectionUsageTable.setItems(cardUsages);
+        autoRefreshConnectionUsage();
     }
+
+    public void autoRefreshConnectionUsage(){
+        if(this.scheduledExecutorService != null){
+            return;
+        }
+        this.scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+        scheduledExecutorService.scheduleWithFixedDelay(() -> {
+            ObservableList<Stage> stages = StageHelper.getStages();
+            if(stages.size() == 0 || !stages.get(0).isShowing()){
+                return;
+            }
+            HibernateDao hibernateDao = new HibernateDao();
+            hibernateDao.deleteLeft(ConnectionUsage.class, 1000);
+            List<ConnectionUsage> list = hibernateDao.list(ConnectionUsage.class, 0, 1000);
+            ObservableList<ConnectionUsage> cardUsages = FXCollections.observableArrayList(list);
+            connectionUsageTable.setItems(cardUsages);
+        }, 1000, 200, TimeUnit.MILLISECONDS);
+    }
+     public void autoRefreshCardUsage(){
+            if(this.scheduledExecutorService1 != null){
+                return;
+            }
+            this.scheduledExecutorService1 = Executors.newSingleThreadScheduledExecutor();
+            scheduledExecutorService1.scheduleWithFixedDelay(() -> {
+                ObservableList<Stage> stages = StageHelper.getStages();
+                if(stages.size() == 0 || !stages.get(0).isShowing()){
+                    return;
+                }
+                HibernateDao hibernateDao = new HibernateDao();
+                hibernateDao.deleteLeft(CardUsage.class, 1000);
+                List<CardUsage> list = hibernateDao.list(CardUsage.class, 0, 1000);
+                ObservableList<CardUsage> cardUsages = FXCollections.observableArrayList(list);
+                cardUsageTable.setItems(cardUsages);
+            }, 1000, 200, TimeUnit.MILLISECONDS);
+        }
 
     public void exit_on_action() {
         Platform.exit();
@@ -367,6 +401,17 @@ public class DongluCarparkAppController implements Initializable {
         } catch (IOException e) {
             LOGGER.error("读取配置文件出错", e);
             Alerts.create(Alert.AlertType.ERROR).setTitle("错误").setHeaderText("读取配置文件出错").setContentText(e.getMessage()).showAndWait();
+        }
+
+    }
+
+    public void clean_cardUsage_on_action(ActionEvent actionEvent) {
+        try{
+            HibernateDao hibernateDao = new HibernateDao();
+            hibernateDao.deleteLeft(CardUsage.class,0);
+            Alerts.create(Alert.AlertType.INFORMATION).setTitle("提示").setHeaderText("删除成功").showAndWait();
+        }catch (Exception e){
+            Alerts.create(Alert.AlertType.ERROR).setTitle("错误").setHeaderText("删除失败").showAndWait();
         }
 
     }

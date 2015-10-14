@@ -5,6 +5,7 @@ import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Date;
@@ -18,6 +19,7 @@ import java.util.concurrent.TimeUnit;
 public class AbstractHibernateDaoTest {
 
     @Test
+    @Ignore
     public void create(){
         long start = System.nanoTime();
         HibernateDao abstractHibernateDao = new HibernateDao();
@@ -50,16 +52,18 @@ public class AbstractHibernateDaoTest {
         Assert.assertEquals(cardUsage.getTable_id(),list.get(0).getTable_id());
     }
 
+    @Ignore
     @Test
     public void testSpeed(){
         long start = System.nanoTime();
         final HibernateDao abstractHibernateDao = new HibernateDao();
-        for (int i = 0; i < 1; i++) {
+        for (long i = 0; i < 100; i++) {
             CardUsage cardUsage = new CardUsage();
             cardUsage.setIdentifier("46BE23F2");
             cardUsage.setDatabaseTime(new Date());
             cardUsage.setDeviceName("12345");
             abstractHibernateDao.save(cardUsage);
+            Assert.assertEquals(i+1,cardUsage.getTable_id().intValue());
         }
         System.out.println(TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start));
         start = System.nanoTime();

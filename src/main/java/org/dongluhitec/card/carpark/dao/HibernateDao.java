@@ -24,7 +24,7 @@ public class HibernateDao
     public static Logger LOGGER = LoggerFactory.getLogger(HibernateDao.class);
     private static SessionFactory sessionFactory;
 
-    public SessionFactory initSessionFactory()
+    static
     {
         LOGGER.info("开始初始化数据库连接池");
         try
@@ -33,9 +33,8 @@ public class HibernateDao
 
             StandardServiceRegistryBuilder standardServiceRegistryBuilder = new StandardServiceRegistryBuilder();
             ServiceRegistry serviceRegistry = standardServiceRegistryBuilder.applySettings(cfg.getProperties()).build();
-            SessionFactory sessionFactory = cfg.buildSessionFactory(serviceRegistry);
+            sessionFactory = cfg.buildSessionFactory(serviceRegistry);
             LOGGER.info("初始化数据库连接池成功");
-            return sessionFactory;
         }
         catch (HibernateException e)
         {
@@ -45,15 +44,12 @@ public class HibernateDao
 
     public Session getSession()
     {
-        if (sessionFactory == null) {
-            sessionFactory = initSessionFactory();
-        }
         return sessionFactory.openSession();
     }
 
     public void save(Object o)
     {
-        LOGGER.info("保存:{}", o.toString());
+        LOGGER.debug("保存:{}", o.toString());
         Session session = getSession();
         try
         {
@@ -73,7 +69,7 @@ public class HibernateDao
 
     public void delete(Class cls, Long id)
     {
-        LOGGER.info("删除 {} id {}", cls.getName(), id);
+        LOGGER.debug("删除 {} id {}", cls.getName(), id);
         Session session = getSession();
         try
         {
@@ -93,7 +89,7 @@ public class HibernateDao
 
     public List list(Class<? extends AbstractDomain> cls, int start, int max)
     {
-        LOGGER.info("查询 {} 起始位置 {} 数量 {} ", cls.getName(), Integer.valueOf(start), Integer.valueOf(max));
+        LOGGER.debug("查询 {} 起始位置 {} 数量 {} ", cls.getName(), Integer.valueOf(start), Integer.valueOf(max));
         Session session = getSession();
         try
         {
@@ -115,7 +111,7 @@ public class HibernateDao
 
     public void deleteLeft(Class<? extends AbstractDomain> cls, int left)
     {
-        LOGGER.info("删除 {} 只剩 {} ", cls.getName(), Integer.valueOf(left));
+        LOGGER.debug("删除 {} 只剩 {} ", cls.getName(), Integer.valueOf(left));
         Session session = getSession();
         try
         {
@@ -126,7 +122,7 @@ public class HibernateDao
                 return;
             }
             Transaction transaction = session.beginTransaction();
-            Query query = session.createQuery("delete from " + cls.getSimpleName() + " where table_id < " + (o.longValue() - 1000L));
+            Query query = session.createQuery("delete from " + cls.getSimpleName() + " where table_id < " + (o.longValue() - left));
             query.executeUpdate();
             transaction.commit();
         }
