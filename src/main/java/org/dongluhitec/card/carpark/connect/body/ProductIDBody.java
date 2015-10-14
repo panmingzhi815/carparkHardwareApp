@@ -11,7 +11,7 @@ public class ProductIDBody implements MessageBody {
         return this.productinId;
     }
 
-    public void setProductinId(String productinId) {
+    public void asetProductinId(String productinId) {
         this.productinId = productinId;
     }
 
