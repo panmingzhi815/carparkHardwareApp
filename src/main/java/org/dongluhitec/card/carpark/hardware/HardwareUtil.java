@@ -17,13 +17,10 @@ import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 
-import com.google.common.base.Strings;
 import com.google.common.util.concurrent.Uninterruptibles;
 import org.dongluhitec.card.carpark.domain.ConnectionDirection;
 import org.dongluhitec.card.carpark.domain.ConnectionUsage;
 import org.dongluhitec.card.carpark.exception.EncryptException;
-import org.dongluhitec.card.carpark.model.CarparkSetting;
-import org.dongluhitec.card.carpark.model.Device;
 import org.dongluhitec.card.carpark.ui.Config;
 import org.dongluhitec.card.carpark.ui.LinkDevice;
 import org.dongluhitec.card.carpark.util.RSAUtils;
@@ -171,7 +168,7 @@ public class HardwareUtil {
             connectionUsage.setDirection(ConnectionDirection.发送);
             connectionUsage.setShortContent(mark);
             connectionUsage.setLongContent(msg.getBytes());
-            org.dongluhitec.card.carpark.hardware.HardwareService.hibernateDao.save(connectionUsage);
+            org.dongluhitec.card.carpark.hardware.HardwareService.databaseDao.save(connectionUsage);
         } catch (Exception e) {
             e.printStackTrace();
         }

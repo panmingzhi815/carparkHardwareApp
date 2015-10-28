@@ -11,12 +11,13 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
 public class XinlutongJNAImpl implements XinlutongJNA {
-	
+
 	private static final Logger LOGGER = LoggerFactory.getLogger(XinlutongJNAImpl.class);
 	private static final String LIBRARY_NAME = "HvDevice";
 	private static final XinlutongNativeInterface HvDevice;
@@ -29,10 +30,9 @@ public class XinlutongJNAImpl implements XinlutongJNA {
 	static int CALLBACK_TYPE_RECORD_SMALLIMAGE		= (int)0xFFFF0003;
 	static int CALLBACK_TYPE_RECORD_INFOEND		= (int)0xFFFF0006;
 
-	private XinlutongCallback xinlutongCallback;
-	private XinlutongCallback xinlutongCallback2;
+	private Map<String,XinlutongCallback> callbackMap = new HashMap<>();
 	private boolean inited = false;
-	
+
 	static {
 		System.setProperty("jna.encoding", "GB2312" );
 		String path = System.getProperty("user.dir") + File.separator + "native";
@@ -44,31 +44,26 @@ public class XinlutongJNAImpl implements XinlutongJNA {
 	@Override
 	public void openEx(final String ip,final XinlutongCallback.XinlutongResult xinlutongResult) {
 		inited = true;
-		LOGGER.info("开始准备实时接收{}的数据回调",ip);
-		
+		LOGGER.info("开始准备实时接收{}的数据回调", ip);
+
 		Pointer hw_pointer = HvDevice.HVAPI_OpenEx(ip, null);
 		closeHandlerMap.put(ip, hw_pointer);
-		
-		XinlutongCallback xin = null;
-		if(this.xinlutongCallback == null){
-			xin = new XinlutongCallback(xinlutongResult,ip,HvDevice);
-			xinlutongCallback = xin;
-		} else if(xinlutongCallback2 == null){
-			xin = new XinlutongCallback(xinlutongResult,ip,HvDevice);
-			xinlutongCallback2 = xin;
+
+		if(callbackMap.get(ip) != null){
+			return;
 		}
 
+		XinlutongCallback callback = new XinlutongCallback(xinlutongResult, ip, HvDevice);
+		callbackMap.put(ip,callback);
 
-		assert xin != null;
-
-		HvDevice.HVAPI_SetCallBackEx(hw_pointer, xin.plateNO, Pointer.NULL, 0, CALLBACK_TYPE_RECORD_PLATE, null);
-		HvDevice.HVAPI_SetCallBackEx(hw_pointer, xin.bigImage, Pointer.NULL, 0, CALLBACK_TYPE_RECORD_BIGIMAGE, null);
-		HvDevice.HVAPI_SetCallBackEx(hw_pointer, xin.smallImage, Pointer.NULL, 0, CALLBACK_TYPE_RECORD_SMALLIMAGE, null);
-		HvDevice.HVAPI_SetCallBackEx(hw_pointer, xin.end, Pointer.NULL, 0, CALLBACK_TYPE_RECORD_INFOEND, null);
+		HvDevice.HVAPI_SetCallBackEx(hw_pointer, callback.plateNO, Pointer.NULL, 0, CALLBACK_TYPE_RECORD_PLATE, null);
+		HvDevice.HVAPI_SetCallBackEx(hw_pointer, callback.bigImage, Pointer.NULL, 0, CALLBACK_TYPE_RECORD_BIGIMAGE, null);
+		HvDevice.HVAPI_SetCallBackEx(hw_pointer, callback.smallImage, Pointer.NULL, 0, CALLBACK_TYPE_RECORD_SMALLIMAGE, null);
+		HvDevice.HVAPI_SetCallBackEx(hw_pointer, callback.end, Pointer.NULL, 0, CALLBACK_TYPE_RECORD_INFOEND, null);
 	}
-	
+
 	@Override
-	public void closeEx() {
+	public void closeAllEx() {
 		inited = false;
 		Set<Entry<String,Pointer>> entrySet = closeHandlerMap.entrySet();
 		for (Entry<String,Pointer> entry : entrySet) {
@@ -81,9 +76,18 @@ public class XinlutongJNAImpl implements XinlutongJNA {
 				LOGGER.error("停止接收设备{}的车牌信息回调时发生异常：{}",ip,e.getMessage());
 			}
 		}
-		xinlutongCallback =null;
-		xinlutongCallback2 = null;
+		callbackMap.clear();
 		closeHandlerMap.clear();
+	}
+
+	@Override
+	public void closeEx(String ip) {
+		Pointer pointer = closeHandlerMap.get(ip);
+		if(pointer != null){
+			HvDevice.HVAPI_CloseEx(pointer);
+		}
+		callbackMap.remove(ip);
+		closeHandlerMap.remove(ip);
 	}
 
 
@@ -92,7 +96,7 @@ public class XinlutongJNAImpl implements XinlutongJNA {
 		if(!inited){
 			return;
 		}
-		LOGGER.info("开始软件触发设备{}",ip);
+		LOGGER.info("开始软件触发设备{}抓拍",ip);
 		Pointer pointer = closeHandlerMap.get(ip);
 		Memory memory = new Memory(ResultBufferSize);
 		Pointer share = memory.share(0, ResultBufferSize);

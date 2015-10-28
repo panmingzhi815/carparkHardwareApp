@@ -371,7 +371,7 @@ public class DongluCarparkAppController implements Initializable {
             FileUtil.writeObjectToFile(config, CONFIG_FILEPATH);
             Alerts.create(Alert.AlertType.INFORMATION).setTitle("提示").setHeaderText("保存配置成功").show();
             DongluCarparkAppController.config = config;
-            HardwareService.hasSend = false;
+            HardwareService.isAlreadySendAd = false;
         } catch (IOException e) {
             Alerts.create(Alert.AlertType.ERROR).setTitle("错误").setHeaderText("保存配置文件出错").setContentText(e.getMessage()).show();
         }

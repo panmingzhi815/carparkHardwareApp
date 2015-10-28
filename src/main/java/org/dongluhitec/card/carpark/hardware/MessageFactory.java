@@ -9,7 +9,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MessageUtil {
+public class MessageFactory {
 	
 	private static Map<String,Message<MessageBody>> commandMap = new HashMap<>();
 	

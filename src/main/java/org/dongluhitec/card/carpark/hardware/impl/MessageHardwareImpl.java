@@ -12,8 +12,8 @@ import org.dongluhitec.card.carpark.connect.body.CarparkNowRecordBody;
 import org.dongluhitec.card.carpark.connect.body.OpenDoorEnum;
 import org.dongluhitec.card.carpark.connect.body.ProductIDBody;
 import org.dongluhitec.card.carpark.connect.body.SimpleBody;
-import org.dongluhitec.card.carpark.hardware.MessageService;
-import org.dongluhitec.card.carpark.hardware.MessageUtil;
+import org.dongluhitec.card.carpark.hardware.MessageHardware;
+import org.dongluhitec.card.carpark.hardware.MessageFactory;
 import org.dongluhitec.card.carpark.model.CarparkNowRecord;
 import org.dongluhitec.card.carpark.model.Device;
 import org.slf4j.Logger;
@@ -23,9 +23,9 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 
-public class MessageServiceImpl implements MessageService {
+public class MessageHardwareImpl implements MessageHardware {
 	
-	private Logger LOGGER = LoggerFactory.getLogger(MessageServiceImpl.class);
+	private Logger LOGGER = LoggerFactory.getLogger(MessageHardwareImpl.class);
 	private static Map<String,MessageTransport> transportMap = new HashMap<String,MessageTransport>();
 	private static ListeningExecutorService listeningDecorator = MoreExecutors.listeningDecorator(Executors.newSingleThreadExecutor());
 	
@@ -49,7 +49,7 @@ public class MessageServiceImpl implements MessageService {
 	@Override
 	public ListenableFuture<Boolean> carparkOpenDoor(final Device device,OpenDoorEnum openDoorEnum){
 		LOGGER.debug("carpark open door for :{}" , device);
-		final Message<?> msg = MessageUtil.createOpenDoorMsg(device, openDoorEnum);
+		final Message<?> msg = MessageFactory.createOpenDoorMsg(device, openDoorEnum);
 		
 		ListenableFuture<Boolean> submit = listeningDecorator.submit(new Callable<Boolean>() {
 			@Override
@@ -69,7 +69,7 @@ public class MessageServiceImpl implements MessageService {
 	@Override
 	public ListenableFuture<CarparkNowRecord> carparkReadNowRecord(final Device device){
 		LOGGER.debug("read carpark current record for :{}" , device);
-		final Message<?> msg = MessageUtil.createReadNowRecordMsg(device);
+		final Message<?> msg = MessageFactory.createReadNowRecordMsg(device);
 		
 		ListenableFuture<CarparkNowRecord> submit = listeningDecorator.submit(new Callable<CarparkNowRecord>() {
 			@Override
@@ -94,7 +94,7 @@ public class MessageServiceImpl implements MessageService {
 	@Override
 	public ListenableFuture<Boolean> carparkScreenVoiceDoor(final Device device,final int screenID,final int voice,final int font,final int door,final String text){
 		LOGGER.debug("carpark's screen and voice and door for :{}" , device);
-		final Message<?> msg = MessageUtil.createScreenVoiceDoorMsg(device,screenID,voice,font,door,text);
+		final Message<?> msg = MessageFactory.createScreenVoiceDoorMsg(device, screenID, voice, font, door, text);
 		ListenableFuture<Boolean> submit = listeningDecorator.submit(new Callable<Boolean>() {
 			@Override
 			public Boolean call() throws Exception {
@@ -113,7 +113,7 @@ public class MessageServiceImpl implements MessageService {
 	@Override
 	public void setDateTime(final Device device,final Date date){
 		LOGGER.debug("carpark's set date :{} for :{}" ,date, device);
-		final Message<?> msg = MessageUtil.createSetDateTime(device, date);
+		final Message<?> msg = MessageFactory.createSetDateTime(device, date);
 		listeningDecorator.submit(new Runnable() {
 			@Override
 			public void run() {
@@ -126,7 +126,7 @@ public class MessageServiceImpl implements MessageService {
 	@Override
 	public ListenableFuture<Boolean> setAD(final Device device, String adStr) {
 		LOGGER.debug("carpark's set ad:{} for:{}" , adStr, device);
-		final Message<?> msg = MessageUtil.createADScreenMsg(device, adStr);
+		final Message<?> msg = MessageFactory.createADScreenMsg(device, adStr);
 		ListenableFuture<Boolean> submit = listeningDecorator.submit(new Callable<Boolean>() {
 			@Override
 			public Boolean call() throws Exception {
@@ -145,7 +145,7 @@ public class MessageServiceImpl implements MessageService {
 	@Override
 	public ListenableFuture<String> readVersion(final Device device) {
 		LOGGER.debug("carpark's read version for:{}" , device);
-		final Message<?> msg = MessageUtil.createVersionMsg(device);
+		final Message<?> msg = MessageFactory.createVersionMsg(device);
 		ListenableFuture<String> submit = listeningDecorator.submit(new Callable<String>() {
 			@Override
 			public String call() throws Exception {

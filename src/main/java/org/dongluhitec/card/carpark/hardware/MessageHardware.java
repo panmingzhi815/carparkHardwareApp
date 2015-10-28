@@ -7,7 +7,7 @@ import org.dongluhitec.card.carpark.connect.body.OpenDoorEnum;
 import org.dongluhitec.card.carpark.model.CarparkNowRecord;
 import org.dongluhitec.card.carpark.model.Device;
 
-public interface MessageService {
+public interface MessageHardware {
 
 	/**
 	 * 开门
