@@ -3,7 +3,6 @@ package org.dongluhitec.card.carpark.hardware;
 import com.google.common.base.Strings;
 import com.google.common.util.concurrent.ListenableFuture;
 import org.apache.mina.core.future.ConnectFuture;
-import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.codec.textline.TextLineCodecFactory;
 import org.apache.mina.filter.logging.LoggingFilter;
@@ -36,26 +35,28 @@ public class HardwareService {
     private Logger LOGGER = LoggerFactory.getLogger(HardwareService.class);
     private final int PORT = 9124;
 
+    private final ScheduledExecutorService delayCheckWebServiceRight;
+
     public static HardwareService singleInstance;
 
     public static MessageHardware messageHardware;
     public static HibernateDao databaseDao;
     private static ListenHandler listenHandler;
-    private static boolean isPlayVoice = false;
 
-    public static boolean isAlreadySendAd = false;
-    public static boolean isAlreadyReadProductId = false;
+    public  boolean isAlreadySendAd = false;
+    public  boolean isAlreadyReadProductId = false;
+    private boolean needReplaySendDeviceInfo = false;
 
     private ConnectFuture cf = null;
     private NioSocketConnector connector;
 
     private XinlutongJNAImpl xinlutongJNAImpl;
-    private IoSession session;
 
     private HardwareService(){
         databaseDao = new HibernateDao();
         messageHardware = new MessageHardwareImpl();
         listenHandler = new ListenHandler(messageHardware);
+        delayCheckWebServiceRight = Executors.newSingleThreadScheduledExecutor();
     };
 
     public static HardwareService getInstance(){
@@ -66,11 +67,10 @@ public class HardwareService {
     }
 
     public void start(){
-        startWebConnector();
-        checkWebConnector();
-        checkDateTime();
-        loggingDeviceRecord();
+        listenWebServiceMessage();
         listenLocalPort();
+        delayDownloadDeviceDateTime();
+        loggingDeviceRecord();
         callbackPlateDeviceRecord();
     }
 
@@ -86,7 +86,7 @@ public class HardwareService {
             if(xinlutongJNAImpl == null){
                 xinlutongJNAImpl = new XinlutongJNAImpl();
             }
-            XinlutongCallback.XinlutongResult xlr = (ip, channel, plateNO, bigImage, smallImage) -> HardwareUtil.setPlateInfo(session,linkDevice.getDeviceName(),ip,plateNO,bigImage,smallImage);
+            XinlutongCallback.XinlutongResult xlr = (ip, channel, plateNO, bigImage, smallImage) -> HardwareUtil.setPlateInfo(cf.getSession(),linkDevice.getDeviceName(),ip,plateNO,bigImage,smallImage);
             xinlutongJNAImpl.openEx(linkDevice.getPlateIp(), xlr);
         }
     }
@@ -123,11 +123,6 @@ public class HardwareService {
                         LOGGER.debug("开始轮询设备:{}",device.getName());
                         long start = System.currentTimeMillis();
                         try{
-                            if(isPlayVoice){
-                                HardwareUtil.controlSpeed(start, 300);
-                                isPlayVoice = false;
-                            }
-
                             if(!Strings.isNullOrEmpty(config.getAd()) && !isAlreadySendAd){
                                 ListenableFuture<Boolean> booleanListenableFuture = messageHardware.setAD(device, config.getAd());
                                 booleanListenableFuture.get(5,TimeUnit.SECONDS);
@@ -151,7 +146,7 @@ public class HardwareService {
                                 cardUsage.setIdentifier(carparkNowRecord.getCardID());
                                 databaseDao.save(cardUsage);
 
-                                HardwareUtil.sendCardNO(session, carparkNowRecord.getCardID(),carparkNowRecord.getReaderID()+"", device.getName());
+                                HardwareUtil.sendCardNO(cf.getSession(), carparkNowRecord.getCardID(),carparkNowRecord.getReaderID()+"", device.getName());
                                 HardwareUtil.controlSpeed(start, 1000);
                             }
                             EventBusUtil.post(new EventInfo(EventInfo.EventType.硬件通讯正常, "硬件通讯恢复正常"));
@@ -166,7 +161,7 @@ public class HardwareService {
         },5000,100);
     }
 
-    private void checkDateTime(){
+    private void delayDownloadDeviceDateTime(){
         Config config = DongluCarparkAppController.config;
         ScheduledExecutorService checkDeviceDateTimeService = Executors.newSingleThreadScheduledExecutor();
         checkDeviceDateTimeService.scheduleWithFixedDelay(() -> {
@@ -183,9 +178,6 @@ public class HardwareService {
 
                     long start = System.currentTimeMillis();
                     try {
-                        if (isPlayVoice) {
-                            HardwareUtil.controlSpeed(start, 10000);
-                        }
                         messageHardware.setDateTime(device, date);
                         EventBusUtil.post(new EventInfo(EventInfo.EventType.硬件通讯正常, "硬件通讯恢复正常"));
                     } catch (Exception e) {
@@ -200,73 +192,70 @@ public class HardwareService {
         }, 3000, (config == null ? 30 : config.getValidateTimeLength()), TimeUnit.MINUTES);
     }
 
-    private void startWebConnector(){
+    private void listenWebServiceMessage(){
         try {
             connector = new NioSocketConnector();
 
             connector.getFilterChain().addLast("logger", new LoggingFilter());
             //指定编码过滤器
             TextLineCodecFactory lineCodec=new TextLineCodecFactory(Charset.forName("UTF-8"));
-            lineCodec.setDecoderMaxLineLength(1024*1024); //1M
-            lineCodec.setEncoderMaxLineLength(1024*1024); //1M
-            connector.getFilterChain().addLast("codec",new ProtocolCodecFilter(lineCodec));  //行文本解析
+            lineCodec.setDecoderMaxLineLength(1024 * 1024); //1M
+            lineCodec.setEncoderMaxLineLength(1024 * 1024); //1M
+            connector.getFilterChain().addLast("codec", new ProtocolCodecFilter(lineCodec));  //行文本解析
             connector.setHandler(listenHandler);
             // Set connect timeout.
             connector.setConnectTimeoutCheckInterval(30);
             // 连结到服务器:
             Config config = DongluCarparkAppController.config;
             cf = connector.connect(new InetSocketAddress(config.getReceiveIp(), config.getReceivePort()));
-            boolean b = cf.awaitUninterruptibly(5, TimeUnit.SECONDS);
-            if(!b || cf.getException() != null){
-                EventBusUtil.post(new EventInfo(EventInfo.EventType.外接服务通讯异常, "当前主机与对接服务通讯失败,3秒后会自动重联"));
-            }
-            this.session = cf.getSession();
         } catch (Exception e) {
-//			throw new DongluHWException("对接连接检查发生异常",e);
+            LOGGER.error("打开初始化外接服务监听失败");
+        }
+
+        delayCheeckWebServiceRight();
+    }
+
+
+    private void delayCheeckWebServiceRight(){
+        delayCheckWebServiceRight.scheduleWithFixedDelay(() -> {
+            try {
+                Config cs = DongluCarparkAppController.config;
+                if (cs == null) {
+                    return;
+                }
+                String ip = cs.getReceiveIp();
+                String port = String.valueOf(cs.getReceivePort());
+                LOGGER.debug("正在检查外接服务,ip:{} port:{}", ip, port);
+                if (cf.isConnected()) {
+                    LOGGER.debug("外接服务状态正常");
+
+                    EventBusUtil.post(new EventInfo(EventInfo.EventType.外接服务通讯正常, "外接服务通讯恢复正常"));
+                    if (!needReplaySendDeviceInfo) {
+                        HardwareUtil.sendDeviceInfo(cf.getSession(), cs);
+                        needReplaySendDeviceInfo = true;
+                    }
+                } else {
+                    LOGGER.debug("检查到会话不存在或己关闭，准备重新建立会话");
+
+                    EventBusUtil.post(new EventInfo(EventInfo.EventType.外接服务通讯异常, "当前主机与对接服务通讯失败,3秒后会自动重联"));
+                    replayConnectWebService();
+                }
+            } catch (Exception e) {
+                LOGGER.error("检查外接服务发生错误", e);
+            }
+        }, 5000, 5000, TimeUnit.MILLISECONDS);
+    }
+
+    private void replayConnectWebService(){
+        Config config = DongluCarparkAppController.config;
+        ConnectFuture connect = connector.connect(new InetSocketAddress(config.getReceiveIp(), DongluCarparkAppController.config.getReceivePort()));
+        boolean awaitUninterruptibly = connect.awaitUninterruptibly(10, TimeUnit.SECONDS);
+        if (awaitUninterruptibly && connect.getException() == null) {
+            cf.cancel();
+            cf = connect;
+            needReplaySendDeviceInfo = false;
         }
     }
-
-    private boolean isSendDevice = false;
-    private void checkWebConnector(){
-        Timer timer = new Timer("check web connector");
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                try{
-                    Config cs = DongluCarparkAppController.config;
-                    if(cs == null){
-                        return;
-                    }
-                    String ip = cs.getReceiveIp();
-                    String port = String.valueOf(cs.getReceivePort());
-                    LOGGER.debug("正在检查外接服务,ip:{} port:{}",ip,port);
-                    if(session == null || !session.isConnected()){
-                        LOGGER.debug("检查到会话不存在或己关闭，准备重新建立会话");
-
-                        EventBusUtil.post(new EventInfo(EventInfo.EventType.外接服务通讯异常, "当前主机与对接服务通讯失败,3秒后会自动重联"));
-
-                        ConnectFuture connect = connector.connect(new InetSocketAddress(cs.getReceiveIp(),cs.getReceivePort()));
-                        boolean awaitUninterruptibly = connect.awaitUninterruptibly(10,TimeUnit.SECONDS);
-                        if(awaitUninterruptibly && connect.getException() == null){
-                            cf = connect;
-                            session = cf.getSession();
-                            isSendDevice = false;
-                        }
-                    }else{
-                        EventBusUtil.post(new EventInfo(EventInfo.EventType.外接服务通讯正常, "外接服务通讯恢复正常"));
-                        if(!isSendDevice){
-                            HardwareUtil.sendDeviceInfo(session, cs);
-                            isSendDevice = true;
-                        }
-                    }
-                }catch(Exception e){
-                    LOGGER.error("检查外接服务发生错误",e);
-                }
-            }
-        },5000,2000);
-    }
-
-
 
     public Device toDevice(LinkDevice linkDevice){
         Device device = new Device();
