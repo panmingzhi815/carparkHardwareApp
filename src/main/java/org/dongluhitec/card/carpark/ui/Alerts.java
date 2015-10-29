@@ -7,7 +7,6 @@ import javafx.scene.control.ButtonType;
 import java.util.Optional;
 
 /**
- * 自定义javafx弹出框
  * Created by panmingzhi815 on 2015/10/8 0008.
  */
 public class Alerts {
