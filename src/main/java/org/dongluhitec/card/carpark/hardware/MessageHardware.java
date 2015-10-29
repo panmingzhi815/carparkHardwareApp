@@ -1,11 +1,11 @@
 package org.dongluhitec.card.carpark.hardware;
 
-import java.util.Date;
-
 import com.google.common.util.concurrent.ListenableFuture;
 import org.dongluhitec.card.carpark.connect.body.OpenDoorEnum;
 import org.dongluhitec.card.carpark.model.CarparkNowRecord;
 import org.dongluhitec.card.carpark.model.Device;
+
+import java.util.Date;
 
 public interface MessageHardware {
 

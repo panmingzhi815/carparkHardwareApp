@@ -6,7 +6,7 @@ import org.dongluhitec.card.carpark.connect.exception.DongluInvalidMessageExcept
 
 public class VoiceBody implements MessageBody {
     //大写转播报指令
-    public static enum Single{
+    public enum Single{
         零((byte)0x01), 壹((byte)0x02), 贰((byte)0x03), 叁((byte)0x04),
         肆((byte)0x05), 伍((byte)0x06), 陆((byte)0x07), 柒((byte)0x08),
         捌((byte)0x09), 玖((byte)0x10), 拾((byte)0x11), 佰((byte)0x12),
@@ -36,7 +36,7 @@ public class VoiceBody implements MessageBody {
     }
 
     //如果要增加新语音,只需要修改这个enum即可
-    public static enum Property{
+    public enum Property{
         欢迎光临_请入场停车(new byte[]{0x25,0x29,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00}),
         祝你一路平安(new byte[]{0x30,0x00,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00}),
         此卡未入场(new byte[]{0x19,0x00,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00}),

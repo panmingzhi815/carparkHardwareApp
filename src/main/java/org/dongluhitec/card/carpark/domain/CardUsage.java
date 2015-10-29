@@ -1,7 +1,7 @@
 package org.dongluhitec.card.carpark.domain;
 
-import javax.persistence.*;
-import java.io.Serializable;
+import javax.persistence.Column;
+import javax.persistence.Entity;
 import java.util.Date;
 
 /**

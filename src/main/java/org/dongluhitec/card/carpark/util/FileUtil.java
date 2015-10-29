@@ -1,7 +1,5 @@
 package org.dongluhitec.card.carpark.util;
 
-import com.google.common.io.Closer;
-
 import java.io.*;
 
 /**
@@ -11,7 +9,7 @@ public class FileUtil {
 
     public static void writeObjectToFile(Object obj,String filePath) throws IOException {
         try(FileOutputStream fos = new FileOutputStream(filePath);
-            ObjectOutputStream oos = new ObjectOutputStream(fos);){
+            ObjectOutputStream oos = new ObjectOutputStream(fos)){
             oos.writeObject(obj);
         }catch(Exception e){
             throw new IOException("保存数据对象到文件时发生错误:"+filePath,e);

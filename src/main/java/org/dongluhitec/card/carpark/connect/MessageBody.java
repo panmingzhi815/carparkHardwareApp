@@ -4,6 +4,6 @@ import org.dongluhitec.card.carpark.connect.exception.DongluInvalidMessageExcept
 
 public interface MessageBody extends Bytenize {
 
-	public void initContent(byte[] bytes) throws DongluInvalidMessageException;
+	void initContent(byte[] bytes) throws DongluInvalidMessageException;
 
 }

@@ -18,14 +18,14 @@ public interface XinlutongNativeInterface extends Library {
 	 * @param szApiVer 附加命令
 	 * @return
 	 */
-	public Pointer HVAPI_OpenEx(String szIP, String szApiVer);
+	Pointer HVAPI_OpenEx(String szIP, String szApiVer);
 
 	/**
 	 * 关闭回调
 	 * @param hHandle 初始化HVAPI_OpenEx函数时返回的句柄
 	 * @return 指针
 	 */
-	public Pointer HVAPI_CloseEx(Pointer hHandle);
+	Pointer HVAPI_CloseEx(Pointer hHandle);
 
 	/**
 	 * 发送XML命令设置设备参数及获取设备参数信息
@@ -36,7 +36,7 @@ public interface XinlutongNativeInterface extends Library {
 	 * @param pnRetLen 实际执行结果信息长度
 	 * @return
 	 */
-	public int HVAPI_ExecCmdEx(Pointer hHandle, String szCmd, Pointer szRetBuf, int nBufLen, int pnRetLen);
+	int HVAPI_ExecCmdEx(Pointer hHandle, String szCmd, Pointer szRetBuf, int nBufLen, int pnRetLen);
 
 	/**
 	 * 设置回调函数
@@ -48,7 +48,7 @@ public interface XinlutongNativeInterface extends Library {
 	 * @param szConnCmd 连接参数
 	 * @return 整数
 	 */
-	public int HVAPI_SetCallBackEx(Pointer hHandle, Callback pFunc, Pointer pUserData, int iVideoID, int iCallBackType, String szConnCmd);
+	int HVAPI_SetCallBackEx(Pointer hHandle, Callback pFunc, Pointer pUserData, int iVideoID, int iCallBackType, String szConnCmd);
 
 	/**
 	 * 将YUV图像转换为bitmap
@@ -59,33 +59,33 @@ public interface XinlutongNativeInterface extends Library {
 	 * @param bitmapCache 缓存bitmap数据指针长度
 	 * @return 整数
 	 */
-	public int HVAPIUTILS_SmallImageToBitmapEx(Pointer pbPicData, int wWidth, int wHeight, Pointer bitmapPointer, IntByReference bitmapCache);
+	int HVAPIUTILS_SmallImageToBitmapEx(Pointer pbPicData, int wWidth, int wHeight, Pointer bitmapPointer, IntByReference bitmapCache);
 
 	/**
 	 * 车牌回调类型，上传车牌号码及车牌附加信息数据
 	 */
-	public static interface PLATE_NO_CALLBACK extends Callback {
+	interface PLATE_NO_CALLBACK extends Callback {
 		int invoke(Pointer pUserData, int dwCarID, String pcPlateNo, String pcAppendInfo, int dwRecordType, long dw64TimeMS);
 	}
 	
 	/**
 	 * 车牌大图回调类型，上传识别结果大图数据。
 	 */
-	public static interface HVAPI_CALLBACK_RECORD_BIGIMAGE extends Callback {
+	interface HVAPI_CALLBACK_RECORD_BIGIMAGE extends Callback {
 		int invoke(Pointer pUserData, int dwCarID, int wImageType, int wWidth, int wHeight, Pointer pbPicData, int dwImgDataLen, int dwRecordType, long dwTimeMS);
 	}
 
 	/**
 	 * 车牌小图回调类型，上传识别结果小图数据
 	 */
-	public static interface HVAPI_CALLBACK_RECORD_SMALLIMAGE extends Callback {
+	interface HVAPI_CALLBACK_RECORD_SMALLIMAGE extends Callback {
 		int invoke(Pointer pUserData, int dwCarID, int wWidth, int wHeight, Pointer pbPicData, int dwImgDataLen, int dwRecordType, long dwTimeMS);
 	}
 
 	/**
 	 * 结束回调函数
 	 */
-	public static interface CARINFO_END_CALLBACK extends Callback {
+	interface CARINFO_END_CALLBACK extends Callback {
 		int invoke(Pointer pUserData, int dwCarID);
 	}
 

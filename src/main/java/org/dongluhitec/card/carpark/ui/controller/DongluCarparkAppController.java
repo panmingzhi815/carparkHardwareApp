@@ -257,10 +257,10 @@ public class DongluCarparkAppController implements Initializable {
     }
 
     public void autoRefreshConnectionUsage(){
-        if(this.scheduledExecutorService != null){
+        if(scheduledExecutorService != null){
             return;
         }
-        this.scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+        scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
         scheduledExecutorService.scheduleWithFixedDelay(() -> {
             ObservableList<Stage> stages = StageHelper.getStages();
             if(stages.size() == 0 || !stages.get(0).isShowing()){
@@ -274,10 +274,10 @@ public class DongluCarparkAppController implements Initializable {
         }, 1000, 200, TimeUnit.MILLISECONDS);
     }
      public void autoRefreshCardUsage(){
-            if(this.scheduledExecutorService1 != null){
+            if(scheduledExecutorService1 != null){
                 return;
             }
-            this.scheduledExecutorService1 = Executors.newSingleThreadScheduledExecutor();
+            scheduledExecutorService1 = Executors.newSingleThreadScheduledExecutor();
             scheduledExecutorService1.scheduleWithFixedDelay(() -> {
                 ObservableList<Stage> stages = StageHelper.getStages();
                 if(stages.size() == 0 || !stages.get(0).isShowing()){
@@ -388,7 +388,7 @@ public class DongluCarparkAppController implements Initializable {
             if (o == null) {
                 return;
             }
-            this.config = (Config) o;
+            config = (Config) o;
 
             combo_ip.setValue(Strings.nullToEmpty(config.getReceiveIp()));
             combo_port.setValue(String.valueOf(config.getReceivePort()));

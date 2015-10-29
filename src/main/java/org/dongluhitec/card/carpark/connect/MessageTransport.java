@@ -23,8 +23,8 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 
 public class MessageTransport {
-	public static enum TransportType {
-		TCP, COM;
+	public enum TransportType {
+		TCP, COM
 	}
 
 	private final String address;

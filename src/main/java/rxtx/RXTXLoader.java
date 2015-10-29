@@ -12,7 +12,7 @@ import java.util.Set;
 
 public class RXTXLoader {
 
-    public static enum OperatingSystem {
+    public enum OperatingSystem {
         WINDOWS("Windows", "rxtxSerial.dll"),
         LINUX("Linux", "librxtxSerial.so"),
         MACOSX("Mac OS X", "librxtxSerial.jnilib");
@@ -30,7 +30,7 @@ public class RXTXLoader {
         private final String key;
         private final String libPath;
 
-        private OperatingSystem(String key, String libPath) {
+        OperatingSystem(String key, String libPath) {
             this.key = key;
             this.libPath = libPath;
         }
@@ -40,7 +40,7 @@ public class RXTXLoader {
         }
     }
 
-    public static enum Architecture {
+    public enum Architecture {
         X86_64("amd64", "x86_64"),
         X86("i386", "x86");
 
@@ -58,7 +58,7 @@ public class RXTXLoader {
 
         private final String[] keys;
 
-        private Architecture(String... keys) {
+        Architecture(String... keys) {
             this.keys = keys;
         }
     }
