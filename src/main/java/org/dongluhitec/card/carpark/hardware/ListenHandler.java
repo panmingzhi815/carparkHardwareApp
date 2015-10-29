@@ -20,7 +20,7 @@ import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 /**
- * ¼àÌı¶Ô½Ó·½µÄ¿ØÖÆÃüÁî
+ * ç›‘å¬å¯¹æ¥æ–¹çš„æ§åˆ¶å‘½ä»¤
  * Created by xiaopan on 2015/10/28 0028.
  */
 public class ListenHandler extends IoHandlerAdapter {
@@ -47,12 +47,12 @@ public class ListenHandler extends IoHandlerAdapter {
         final Document dom = DocumentHelper.parseText(wm.getContent());
         final Element rootElement = dom.getRootElement();
 
-        if(wm.getType() == WebMessageType.³É¹¦){
-            HardwareUtil.responseResult(session,dom);
+        if(wm.getType() == WebMessageType.æˆåŠŸ){
+            HardwareUtil.responseResult(dom);
             return;
         }
 
-        if(wm.getType() == WebMessageType.¹ã¸æ){
+        if(wm.getType() == WebMessageType.å¹¿å‘Š){
             newSingleThreadExecutor.submit(() -> {
                 try{
                     String deviceName = rootElement.element("device").element("deviceName").getTextTrim();
@@ -66,7 +66,7 @@ public class ListenHandler extends IoHandlerAdapter {
 
                         ListenableFuture<Boolean> setAD = messageService.setAD(device, ad);
                         setAD.get();
-                        HardwareUtil.responseDeviceControl(session,dom);
+                        HardwareUtil.responseDeviceControl(session);
                     }
                 }catch(Exception e){
                     e.printStackTrace();
@@ -75,7 +75,7 @@ public class ListenHandler extends IoHandlerAdapter {
 
         }
 
-        if(wm.getType() == WebMessageType.Éè±¸¿ØÖÆ){
+        if(wm.getType() == WebMessageType.è®¾å¤‡æ§åˆ¶){
             newSingleThreadExecutor.submit(() -> {
                 try {
                     Element controlElement = rootElement.element("control");
@@ -102,7 +102,7 @@ public class ListenHandler extends IoHandlerAdapter {
                     Config config = DongluCarparkAppController.config;
                     List<LinkDevice> collect = config.getLinkDeviceList().stream().filter(filter -> filter.getDeviceName().equals(deviceName)).collect(Collectors.toList());
                     if (collect.isEmpty()) {
-                        LOGGER.warn("Î´ÅäÖÃÉè±¸:{} ĞÅÏ¢£¬Ôİ²»ÄÜ½ÓÊÕÇëÇó", deviceName);
+                        LOGGER.warn("æœªé…ç½®è®¾å¤‡:{} ä¿¡æ¯ï¼Œæš‚ä¸èƒ½æ¥æ”¶è¯·æ±‚", deviceName);
                         return;
                     }
                     Device device = toDevice(collect.get(0));
@@ -127,7 +127,7 @@ public class ListenHandler extends IoHandlerAdapter {
                             carparkScreenVoiceDoor.get();
                         }
                     }
-                    HardwareUtil.responseDeviceControl(session, dom);
+                    HardwareUtil.responseDeviceControl(session);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -148,9 +148,9 @@ public class ListenHandler extends IoHandlerAdapter {
         device.setArea(linkDevice.getDeviceAddress());
         device.setInoutType(linkDevice.getDeviceType());
         device.setName(linkDevice.getDeviceName());
-        device.setSupportChinese("Ö§³Ö");
-        device.setSupportInsideVoice("Ö§³Ö");
-        device.setSupportOutsideVoice("Ö§³Ö");
+        device.setSupportChinese("æ”¯æŒ");
+        device.setSupportInsideVoice("æ”¯æŒ");
+        device.setSupportOutsideVoice("æ”¯æŒ");
         return device;
     }
 }

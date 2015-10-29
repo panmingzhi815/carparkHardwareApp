@@ -32,8 +32,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class HardwareService {
-    private Logger LOGGER = LoggerFactory.getLogger(HardwareService.class);
-    private final int PORT = 9124;
+    public final Logger LOGGER = LoggerFactory.getLogger(HardwareService.class);
+    public final int PORT = 9124;
 
     private final ScheduledExecutorService delayCheckWebServiceRight;
 
@@ -43,8 +43,8 @@ public class HardwareService {
     public static HibernateDao databaseDao;
     private static ListenHandler listenHandler;
 
-    public  boolean isAlreadySendAd = false;
-    public  boolean isAlreadyReadProductId = false;
+    public static   boolean isAlreadySendAd = false;
+    public static   boolean isAlreadyReadProductId = false;
     private boolean needReplaySendDeviceInfo = false;
 
     private ConnectFuture cf = null;
@@ -57,7 +57,7 @@ public class HardwareService {
         messageHardware = new MessageHardwareImpl();
         listenHandler = new ListenHandler(messageHardware);
         delayCheckWebServiceRight = Executors.newSingleThreadScheduledExecutor();
-    };
+    }
 
     public static HardwareService getInstance(){
         if(singleInstance == null){
@@ -156,7 +156,7 @@ public class HardwareService {
                             HardwareUtil.controlSpeed(start, 400);
                         }
                     }
-                }catch(Exception e){}
+                }catch(Exception ignored){}
             }
         },5000,100);
     }
@@ -212,11 +212,11 @@ public class HardwareService {
             LOGGER.error("打开初始化外接服务监听失败");
         }
 
-        delayCheeckWebServiceRight();
+        delayCheckWebServiceRight();
     }
 
 
-    private void delayCheeckWebServiceRight(){
+    private void delayCheckWebServiceRight(){
         delayCheckWebServiceRight.scheduleWithFixedDelay(() -> {
             try {
                 Config cs = DongluCarparkAppController.config;
@@ -250,7 +250,7 @@ public class HardwareService {
         Config config = DongluCarparkAppController.config;
         ConnectFuture connect = connector.connect(new InetSocketAddress(config.getReceiveIp(), DongluCarparkAppController.config.getReceivePort()));
         boolean awaitUninterruptibly = connect.awaitUninterruptibly(10, TimeUnit.SECONDS);
-        if (awaitUninterruptibly && connect.getException() == null) {
+        if (awaitUninterruptibly) {
             cf.cancel();
             cf = connect;
             needReplaySendDeviceInfo = false;

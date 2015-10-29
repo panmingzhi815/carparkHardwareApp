@@ -4,9 +4,6 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 
-import com.google.common.base.Charsets;
-import com.google.common.base.Preconditions;
-
 public class WebMessage implements Serializable{
 	
 	private static final long serialVersionUID = -2992809324781810721L;

@@ -80,16 +80,6 @@ public class XinlutongJNAImpl implements XinlutongJNA {
 		closeHandlerMap.clear();
 	}
 
-	@Override
-	public void closeEx(String ip) {
-		Pointer pointer = closeHandlerMap.get(ip);
-		if(pointer != null){
-			HvDevice.HVAPI_CloseEx(pointer);
-		}
-		callbackMap.remove(ip);
-		closeHandlerMap.remove(ip);
-	}
-
 
 	@Override
 	public void tigger(String ip) {

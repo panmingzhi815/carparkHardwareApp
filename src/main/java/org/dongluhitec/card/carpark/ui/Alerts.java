@@ -1,20 +1,13 @@
 package org.dongluhitec.card.carpark.ui;
 
-import com.sun.javafx.stage.StageHelper;
-import javafx.beans.InvalidationListener;
-import javafx.beans.Observable;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.event.EventHandler;
 import javafx.scene.Node;
-import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 
 import java.util.Optional;
 
 /**
+ * 自定义javafx弹出框
  * Created by panmingzhi815 on 2015/10/8 0008.
  */
 public class Alerts {
@@ -35,7 +28,7 @@ public class Alerts {
         return this;
     }
 
-    public Alerts setIcon(Image icon) {
+    public Alerts setIcon() {
         //TODO how set icon
         return this;
     }
@@ -47,12 +40,6 @@ public class Alerts {
 
     public Alerts setHeaderContent(Node node) {
         alert.getDialogPane().setHeader(node);
-        return this;
-    }
-
-    public Alerts setExpandableContent(Node node) {
-        alert.getDialogPane().setExpanded(true);
-        alert.getDialogPane().setExpandableContent(node);
         return this;
     }
 

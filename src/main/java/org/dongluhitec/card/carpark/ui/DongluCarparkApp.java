@@ -1,12 +1,14 @@
 package org.dongluhitec.card.carpark.ui;
 
 import com.google.common.eventbus.Subscribe;
+import com.sun.deploy.uitoolkit.*;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
@@ -49,6 +51,8 @@ public class DongluCarparkApp extends Application {
     private BufferedImage error;
     private BufferedImage warn;
     private Image set;
+
+    private long lastChangeImageTime;
 
     public DongluCarparkApp() {
     }
@@ -98,29 +102,29 @@ public class DongluCarparkApp extends Application {
                     hardwareService.start();
                     LOGGER.info("启动硬件服务成功");
                 } catch (Exception e) {
-                    LOGGER.info("启动硬件服务时发生错误",e);
-                    Platform.runLater(()->{
+                    LOGGER.info("启动硬件服务时发生错误", e);
+                    Platform.runLater(() -> {
                         ButtonType save = new ButtonType("保存错误信息到文件");
                         ButtonType cancel = new ButtonType("取消");
 
                         String headerText = "启动系统服务失败！！！\r\n你可将该错误保存到文件，以便开发商查找解决方案";
                         Optional<ButtonType> buttonType = Alerts.create(Alert.AlertType.ERROR).setButtons(save, cancel).setTitle("错误").setHeaderText(headerText).setContentText(e.getMessage()).showAndWait();
-                        if (buttonType.isPresent() && buttonType.get() == save){
+                        if (buttonType.isPresent() && buttonType.get() == save) {
                             DirectoryChooser directoryChooser = new DirectoryChooser();
                             directoryChooser.setTitle("请选择在保存的路径");
                             File file = directoryChooser.showDialog(stage);
                             try {
-                                Files.write(Paths.get(file.getCanonicalPath(),"log.txt"),e.getMessage().getBytes());
+                                Files.write(Paths.get(file.getCanonicalPath(), "log.txt"), e.getMessage().getBytes());
                                 String headerText1 = "保存成功！\r\n你可将该错误日志文件发给开发商，快速查找解决方案";
                                 Alerts.create(Alert.AlertType.INFORMATION).setTitle("提示").setHeaderText(headerText1).showAndWait();
                             } catch (IOException e1) {
-                                LOGGER.error("保存系统错误日志时发生错误",e1);
+                                LOGGER.error("保存系统错误日志时发生错误", e1);
                             }
                         }
                     });
                 }
             }
-        },3000);
+        }, 3000);
     }
 
     private void enableTray(final Stage stage) {
@@ -168,35 +172,19 @@ public class DongluCarparkApp extends Application {
 
     @Subscribe
     public void listenTrayInfo(final EventInfo event) {
-        SwingUtilities.invokeLater(()->{
+        SwingUtilities.invokeLater(() -> {
             switch (event.getEventType()) {
                 case 硬件通讯异常:
-                    if(trayIcon.getImage() == error){
-                        return;
-                    }
-                    trayIcon.setImage(error);
-                    createTip((String)event.getObj());
+                    changTrayIcon(error, (String) event.getObj());
                     break;
                 case 外接服务通讯异常:
-                    if(trayIcon.getImage() == warn){
-                        return;
-                    }
-                    trayIcon.setImage(warn);
-                    createTip((String)event.getObj());
+                    changTrayIcon(warn, (String) event.getObj());
                     break;
                 case 外接服务通讯正常:
-                    if(trayIcon.getImage() == run){
-                        return;
-                    }
-                    trayIcon.setImage(run);
-                    createTip((String)event.getObj());
+                    changTrayIcon(run, (String) event.getObj());
                     break;
                 case 硬件通讯正常:
-                    if(trayIcon.getImage() == run){
-                        return;
-                    }
-                    trayIcon.setImage(run);
-                    createTip((String)event.getObj());
+                    changTrayIcon(run, (String) event.getObj());
                     break;
                 default:
                     break;
@@ -205,7 +193,27 @@ public class DongluCarparkApp extends Application {
     }
 
     public void createTip(final String content) {
-        SwingUtilities.invokeLater(() -> trayIcon.setToolTip(content));
+        SwingUtilities.invokeLater(() -> {
+            trayIcon.displayMessage("123",content, TrayIcon.MessageType.INFO);
+        });
     }
 
+    public void changTrayIcon(BufferedImage img, String content){
+        if (trayIcon.getImage() == img) {
+            return;
+        }
+        if (System.currentTimeMillis() - lastChangeImageTime < 6000) {
+            return;
+        }
+        this.lastChangeImageTime = System.currentTimeMillis();
+        trayIcon.setImage(img);
+
+        if(img == warn){
+            trayIcon.displayMessage("警告",content, TrayIcon.MessageType.WARNING);
+        }else if(img == error){
+            trayIcon.displayMessage("错误",content, TrayIcon.MessageType.ERROR);
+        }else if(img == run){
+            trayIcon.displayMessage("提示",content, TrayIcon.MessageType.INFO);
+        }
+    }
 }
