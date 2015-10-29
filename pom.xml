@@ -123,12 +123,6 @@
             <version>${hibernate.version}</version>
         </dependency>
 
-        <!--<dependency>-->
-            <!--<groupId>org.hibernate</groupId>-->
-            <!--<artifactId>hibernate-annotations</artifactId>-->
-            <!--<version>3.5.6-Final</version>-->
-        <!--</dependency>-->
-
         <dependency>
             <groupId>org.apache.derby</groupId>
             <artifactId>derby</artifactId>
@@ -177,6 +171,7 @@
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
+                    <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
 
