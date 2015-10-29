@@ -9,6 +9,8 @@ import org.dongluhitec.card.carpark.domain.ConnectionDirection;
 import org.dongluhitec.card.carpark.domain.ConnectionUsage;
 import org.dongluhitec.card.carpark.exception.EncryptException;
 import org.dongluhitec.card.carpark.ui.Config;
+import org.dongluhitec.card.carpark.util.EventBusUtil;
+import org.dongluhitec.card.carpark.util.EventInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -132,7 +134,7 @@ public class HardwareUtil {
             ioSession.write(msg);
             saveConnectionUsage(ConnectionDirection.发送,mark,msg);
         } catch (Exception e) {
-            e.printStackTrace();
+            EventBusUtil.post(new EventInfo(EventInfo.EventType.外接服务通讯异常, "发消息给外接服务时发生异常，请检查对接软件是否正常"));
         }
     }
 

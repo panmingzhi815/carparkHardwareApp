@@ -1,14 +1,12 @@
 package org.dongluhitec.card.carpark.ui;
 
 import com.google.common.eventbus.Subscribe;
-import com.sun.deploy.uitoolkit.*;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
-import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
@@ -47,7 +45,8 @@ public class DongluCarparkApp extends Application {
     private final String TITLE = "停车场底层";
     private TrayIcon trayIcon;
 
-    private BufferedImage run;
+    private BufferedImage hardwareRight;
+    private BufferedImage webserviceRight;
     private BufferedImage error;
     private BufferedImage warn;
     private Image set;
@@ -68,7 +67,8 @@ public class DongluCarparkApp extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         try {
-            run = ImageIO.read(ClassLoader.getSystemResourceAsStream("image/run_16.png"));
+            hardwareRight = ImageIO.read(ClassLoader.getSystemResourceAsStream("image/run_16.png"));
+            webserviceRight = ImageIO.read(ClassLoader.getSystemResourceAsStream("image/run_16.png"));
             error = ImageIO.read(ClassLoader.getSystemResourceAsStream("image/error_16.png"));
             warn = ImageIO.read(ClassLoader.getSystemResourceAsStream("image/warn_16.png"));
             set = new Image(ClassLoader.getSystemResourceAsStream("image/set_64.png"));
@@ -155,7 +155,7 @@ public class DongluCarparkApp extends Application {
         try {
             SystemTray tray = SystemTray.getSystemTray();
 
-            trayIcon = new TrayIcon(run, TITLE, popupMenu);
+            trayIcon = new TrayIcon(hardwareRight, TITLE, popupMenu);
             trayIcon.setToolTip(TITLE);
             tray.add(trayIcon);
             trayIcon.addMouseListener(new MouseAdapter() {
@@ -164,6 +164,12 @@ public class DongluCarparkApp extends Application {
                     Platform.runLater(stage::show);
                 }
             });
+
+            Runtime.getRuntime().addShutdownHook(new Thread(()->{
+                if(tray != null && trayIcon != null){
+                    tray.remove(trayIcon);
+                }
+            }));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -181,10 +187,10 @@ public class DongluCarparkApp extends Application {
                     changTrayIcon(warn, (String) event.getObj());
                     break;
                 case 外接服务通讯正常:
-                    changTrayIcon(run, (String) event.getObj());
+                    changTrayIcon(webserviceRight, (String) event.getObj());
                     break;
                 case 硬件通讯正常:
-                    changTrayIcon(run, (String) event.getObj());
+                    changTrayIcon(hardwareRight, (String) event.getObj());
                     break;
                 default:
                     break;
@@ -199,7 +205,10 @@ public class DongluCarparkApp extends Application {
     }
 
     public void changTrayIcon(BufferedImage img, String content){
-        if (trayIcon.getImage() == img) {
+        if (trayIcon.getImage() == img && trayIcon.getImage() == hardwareRight) {
+            return;
+        }
+        if (trayIcon.getImage() == img && trayIcon.getImage() == webserviceRight) {
             return;
         }
         if (System.currentTimeMillis() - lastChangeImageTime < 6000) {
@@ -212,7 +221,7 @@ public class DongluCarparkApp extends Application {
             trayIcon.displayMessage("警告",content, TrayIcon.MessageType.WARNING);
         }else if(img == error){
             trayIcon.displayMessage("错误",content, TrayIcon.MessageType.ERROR);
-        }else if(img == run){
+        }else if(img == hardwareRight){
             trayIcon.displayMessage("提示",content, TrayIcon.MessageType.INFO);
         }
     }

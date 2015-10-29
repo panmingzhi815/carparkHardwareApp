@@ -79,13 +79,14 @@ public class HardwareService {
             return;
         }
 
+        if(xinlutongJNAImpl == null){
+            xinlutongJNAImpl = new XinlutongJNAImpl();
+        }
+
         xinlutongJNAImpl.closeAllEx();
 
         List<LinkDevice> linkDeviceList = DongluCarparkAppController.config.getLinkDeviceList();
         for (LinkDevice linkDevice : linkDeviceList) {
-            if(xinlutongJNAImpl == null){
-                xinlutongJNAImpl = new XinlutongJNAImpl();
-            }
             XinlutongCallback.XinlutongResult xlr = (ip, channel, plateNO, bigImage, smallImage) -> HardwareUtil.setPlateInfo(cf.getSession(),linkDevice.getDeviceName(),ip,plateNO,bigImage,smallImage);
             xinlutongJNAImpl.openEx(linkDevice.getPlateIp(), xlr);
         }
@@ -179,7 +180,6 @@ public class HardwareService {
                     long start = System.currentTimeMillis();
                     try {
                         messageHardware.setDateTime(device, date);
-                        EventBusUtil.post(new EventInfo(EventInfo.EventType.硬件通讯正常, "硬件通讯恢复正常"));
                     } catch (Exception e) {
                         EventBusUtil.post(new EventInfo(EventInfo.EventType.硬件通讯异常, "当前主机与停车场硬件设备通讯时发生异常,请检查"));
                     } finally {
@@ -226,24 +226,22 @@ public class HardwareService {
                 String ip = cs.getReceiveIp();
                 String port = String.valueOf(cs.getReceivePort());
                 LOGGER.debug("正在检查外接服务,ip:{} port:{}", ip, port);
-                if (cf.isConnected()) {
-                    LOGGER.debug("外接服务状态正常");
-
-                    EventBusUtil.post(new EventInfo(EventInfo.EventType.外接服务通讯正常, "外接服务通讯恢复正常"));
+                if (cf.isConnected() && cf.getSession().isConnected()) {
                     if (!needReplaySendDeviceInfo) {
+                        LOGGER.debug("外接服务状态正常");
+                        EventBusUtil.post(new EventInfo(EventInfo.EventType.外接服务通讯正常, "外接服务通讯恢复正常"));
                         HardwareUtil.sendDeviceInfo(cf.getSession(), cs);
                         needReplaySendDeviceInfo = true;
                     }
                 } else {
                     LOGGER.debug("检查到会话不存在或己关闭，准备重新建立会话");
-
                     EventBusUtil.post(new EventInfo(EventInfo.EventType.外接服务通讯异常, "当前主机与对接服务通讯失败,3秒后会自动重联"));
                     replayConnectWebService();
                 }
             } catch (Exception e) {
                 LOGGER.error("检查外接服务发生错误", e);
             }
-        }, 5000, 5000, TimeUnit.MILLISECONDS);
+        }, 5000, 3000, TimeUnit.MILLISECONDS);
     }
 
     private void replayConnectWebService(){
