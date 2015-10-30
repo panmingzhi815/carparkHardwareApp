@@ -13,7 +13,6 @@ import java.io.Serializable;
 @MappedSuperclass
 public abstract class AbstractDomain implements Serializable {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     protected Long table_id;
 
     public Long getTable_id() {

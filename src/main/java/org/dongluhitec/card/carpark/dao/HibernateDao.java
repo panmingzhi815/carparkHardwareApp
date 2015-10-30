@@ -43,77 +43,83 @@ public class HibernateDao
         return sessionFactory.openSession();
     }
 
-    public void save(Object o)
+    private void save(Object o)
     {
-        LOGGER.debug("保存:{}", o.toString());
-        Session session = getSession();
-        try
-        {
+        try (Session session = getSession()) {
             Transaction transaction = session.beginTransaction();
-            session.saveOrUpdate(o);
+            session.save(o);
             transaction.commit();
-        }
-        catch (Exception e)
-        {
+
+            LOGGER.debug("保存:{} 成功", o);
+        } catch (Exception e) {
             throw new DongluServiceException("保存" + o.toString() + "失败", e);
-        }
-        finally
-        {
-            session.close();
         }
     }
 
-    public void delete(Class cls, Long id)
+    public void saveCardUsage(CardUsage o)
     {
-        LOGGER.debug("删除 {} id {}", cls.getName(), id);
-        Session session = getSession();
-        try
-        {
+        Long max = max(CardUsage.class);
+        o.setTable_id(max+1);
+
+        save(o);
+    }
+
+    public void saveConnectionUsage(ConnectionUsage o)
+    {
+        Long max = max(ConnectionUsage.class);
+        o.setTable_id(max);
+
+        save(o);
+    }
+
+    public void delete(Class<? extends AbstractDomain> cls, Long id)
+    {
+        try (Session session = getSession()) {
             Transaction transaction = session.beginTransaction();
             session.delete(session.get(cls, id));
             transaction.commit();
-        }
-        catch (Exception e)
-        {
+            LOGGER.debug("删除 {} id {} 成功", cls.getName(), id);
+        } catch (Exception e) {
             throw new DongluServiceException("删除" + cls.getName() + " id " + id + "失败", e);
-        }
-        finally
-        {
-            session.close();
         }
     }
 
     public List list(Class<? extends AbstractDomain> cls, int start, int max)
     {
-        LOGGER.debug("查询 {} 起始位置 {} 数量 {} ", cls.getName(), Integer.valueOf(start), Integer.valueOf(max));
-        Session session = getSession();
-        try
-        {
+
+        try (Session session = getSession()) {
             Criteria criteria = session.createCriteria(cls);
             criteria.addOrder(Order.desc("table_id"));
             criteria.setFirstResult(start);
             criteria.setMaxResults(max);
-            return criteria.list();
+            List list = criteria.list();
+            LOGGER.debug("查询 {} 起始位置 {} 数量 {} 成功", cls.getName(), start, max);
+            return list;
+        } catch (HibernateException e) {
+            throw new DongluServiceException("查询" + cls.getName() + " 列表失败", e);
         }
-        catch (HibernateException e)
-        {
-            throw new DongluServiceException("查询" + cls.getName() + "失败", e);
-        }
-        finally
-        {
-            session.close();
+    }
+
+    public Long max(Class<? extends AbstractDomain> cls)
+    {
+        try (Session session = getSession()) {
+            Criteria criteria = session.createCriteria(cls);
+            criteria.setProjection(Projections.max("table_id"));
+            Object o = criteria.uniqueResult();
+            long l = o == null ? 0 : (Long) o;
+            LOGGER.debug("查询 {} 最大id {} 成功", cls.getName(),l);
+            return l;
+        } catch (HibernateException e) {
+            throw new DongluServiceException("查询" + cls.getName() + " 最大id失败", e);
         }
     }
 
     public void deleteLeft(Class<? extends AbstractDomain> cls, int left)
     {
-        LOGGER.debug("删除 {} 只剩 {} ", cls.getName(), Integer.valueOf(left));
-        Session session = getSession();
-        try
-        {
+        try (Session session = getSession()) {
             Criteria criteria = session.createCriteria(cls);
             criteria.setProjection(Projections.max("table_id"));
-            Long o = (Long)criteria.uniqueResult();
+            Long o = (Long) criteria.uniqueResult();
             if (o == null) {
                 return;
             }
@@ -121,14 +127,9 @@ public class HibernateDao
             Query query = session.createQuery("delete from " + cls.getSimpleName() + " where table_id < " + (o.longValue() - left));
             query.executeUpdate();
             transaction.commit();
-        }
-        catch (HibernateException e)
-        {
+            LOGGER.debug("删除 {} 只剩 {} 条成功 ", cls.getName(), Integer.valueOf(left));
+        } catch (HibernateException e) {
             throw new DongluServiceException("删除" + cls.getName() + "失败", e);
-        }
-        finally
-        {
-            session.close();
         }
     }
 }

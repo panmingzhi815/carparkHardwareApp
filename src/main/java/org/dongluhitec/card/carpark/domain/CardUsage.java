@@ -43,4 +43,13 @@ public class CardUsage extends AbstractDomain{
     public void setDatabaseTime(Date databaseTime) {
         this.databaseTime = databaseTime;
     }
+
+    @Override
+    public String toString() {
+        return "CardUsage{" +
+                "identifier='" + identifier + '\'' +
+                ", deviceName='" + deviceName + '\'' +
+                ", databaseTime=" + databaseTime +
+                '}';
+    }
 }

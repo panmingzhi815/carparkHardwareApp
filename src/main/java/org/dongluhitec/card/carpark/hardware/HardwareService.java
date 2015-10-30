@@ -145,7 +145,7 @@ public class HardwareService {
                                 cardUsage.setDeviceName(linkDevice.getDeviceName());
                                 cardUsage.setDatabaseTime(new Date());
                                 cardUsage.setIdentifier(carparkNowRecord.getCardID());
-                                databaseDao.save(cardUsage);
+                                databaseDao.saveCardUsage(cardUsage);
 
                                 HardwareUtil.sendCardNO(cf.getSession(), carparkNowRecord.getCardID(),carparkNowRecord.getReaderID()+"", device.getName());
                                 HardwareUtil.controlSpeed(start, 1000);

@@ -7,6 +7,8 @@ import org.hibernate.Transaction;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Date;
 import java.util.List;
@@ -17,6 +19,8 @@ import java.util.concurrent.TimeUnit;
  * Created by panmingzhi815 on 2015/10/8 0008.
  */
 public class AbstractHibernateDaoTest {
+
+    private static  final Logger LOGGER = LoggerFactory.getLogger(AbstractHibernateDaoTest.class);
 
     @Test
     @Ignore
@@ -55,21 +59,16 @@ public class AbstractHibernateDaoTest {
     @Ignore
     @Test
     public void testSpeed(){
-        long start = System.nanoTime();
         final HibernateDao abstractHibernateDao = new HibernateDao();
-        for (long i = 0; i < 100; i++) {
+        for (long i = 0; i < 2; i++) {
             CardUsage cardUsage = new CardUsage();
             cardUsage.setIdentifier("46BE23F2");
             cardUsage.setDatabaseTime(new Date());
             cardUsage.setDeviceName("12345");
-            abstractHibernateDao.save(cardUsage);
-            Assert.assertEquals(i+1,cardUsage.getTable_id().intValue());
+            abstractHibernateDao.saveCardUsage(cardUsage);
         }
-        System.out.println(TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start));
-        start = System.nanoTime();
         List<? extends AbstractDomain> list = abstractHibernateDao.list(CardUsage.class, 0, 10000);
         list.forEach(each->abstractHibernateDao.delete(CardUsage.class,each.getTable_id()));
-        System.out.println(TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start));
     }
 
 }

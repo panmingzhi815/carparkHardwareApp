@@ -1,11 +1,13 @@
 package org.dongluhitec.card.carpark.ui;
 
+import org.dongluhitec.card.carpark.domain.AbstractDomain;
+
 import java.io.Serializable;
 
 /**
  * Created by panmingzhi815 on 2015/10/9 0009.
  */
-public class LinkDevice implements Serializable {
+public class LinkDevice extends AbstractDomain implements Serializable {
     private String linkType;
     private String linkAddress;
     private String deviceType;

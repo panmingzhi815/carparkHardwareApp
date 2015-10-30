@@ -194,6 +194,6 @@ public class HardwareUtil {
         connectionUsage.setDirection(connectionDirection);
         connectionUsage.setShortContent(shortContent);
         connectionUsage.setLongContent(longContent.getBytes());
-        org.dongluhitec.card.carpark.hardware.HardwareService.databaseDao.save(connectionUsage);
+        org.dongluhitec.card.carpark.hardware.HardwareService.databaseDao.saveConnectionUsage(connectionUsage);
     }
 }

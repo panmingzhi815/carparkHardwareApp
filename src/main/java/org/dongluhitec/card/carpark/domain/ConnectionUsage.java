@@ -43,4 +43,12 @@ public class ConnectionUsage extends AbstractDomain{
     public void setLongContent(byte[] longContent) {
         LongContent = longContent;
     }
+
+    @Override
+    public String toString() {
+        return "ConnectionUsage{" +
+                "direction=" + direction +
+                ", shortContent='" + shortContent + '\'' +
+                '}';
+    }
 }
