@@ -7,6 +7,7 @@ import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.dongluhitec.card.carpark.connect.body.OpenDoorEnum;
+import org.dongluhitec.card.carpark.domain.ConnectionDirection;
 import org.dongluhitec.card.carpark.model.Device;
 import org.dongluhitec.card.carpark.ui.Config;
 import org.dongluhitec.card.carpark.ui.LinkDevice;
@@ -46,6 +47,8 @@ public class ListenHandler extends IoHandlerAdapter {
 
         final Document dom = DocumentHelper.parseText(wm.getContent());
         final Element rootElement = dom.getRootElement();
+
+        HardwareUtil.saveConnectionUsage(ConnectionDirection.接收,wm.getType().name(),wm.toString());
 
         if(wm.getType() == WebMessageType.成功){
             HardwareUtil.responseResult(dom);

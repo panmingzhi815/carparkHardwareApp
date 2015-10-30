@@ -47,7 +47,8 @@ public class CardUsage extends AbstractDomain{
     @Override
     public String toString() {
         return "CardUsage{" +
-                "identifier='" + identifier + '\'' +
+                "table_id=" + table_id +
+                ",identifier='" + identifier + '\'' +
                 ", deviceName='" + deviceName + '\'' +
                 ", databaseTime=" + databaseTime +
                 '}';

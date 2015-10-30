@@ -14,11 +14,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class HibernateDao
 {
     public static Logger LOGGER = LoggerFactory.getLogger(HibernateDao.class);
     private static SessionFactory sessionFactory;
+    private static Object synObj = new Object();
 
     static
     {
@@ -58,18 +61,22 @@ public class HibernateDao
 
     public void saveCardUsage(CardUsage o)
     {
-        Long max = max(CardUsage.class);
-        o.setTable_id(max+1);
+        synchronized (synObj){
+            Long max = max(CardUsage.class);
+            o.setTable_id(max+1);
 
-        save(o);
+            save(o);
+        }
     }
 
     public void saveConnectionUsage(ConnectionUsage o)
     {
-        Long max = max(ConnectionUsage.class);
-        o.setTable_id(max);
+        synchronized (synObj){
+            Long max = max(ConnectionUsage.class);
+            o.setTable_id(max+1);
 
-        save(o);
+            save(o);
+        }
     }
 
     public void delete(Class<? extends AbstractDomain> cls, Long id)

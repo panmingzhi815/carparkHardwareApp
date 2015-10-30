@@ -90,7 +90,7 @@ public class DongluCarparkAppController implements Initializable {
         //不符合条件，重新输入
         if (aBoolean) {
 
-            LinkDevice linkDevice = new LinkDevice(linkType.get(), linkAddress.get(),deviceType.get(), deviceName.get(), deviceAddress.get(), plateIP.get());
+            LinkDevice linkDevice = new LinkDevice(linkType.get(), linkAddress.get(), deviceType.get(), deviceName.get(), deviceAddress.get(), plateIP.get());
             ObservableList<LinkDevice> items = deviceTable.getItems();
 
             items.add(linkDevice);
@@ -171,7 +171,7 @@ public class DongluCarparkAppController implements Initializable {
         return null;
     }
 
-    public VBox createDeviceDialog(SimpleStringProperty linkTypeString, SimpleStringProperty linkAddressString,SimpleStringProperty deviceTypeString, SimpleStringProperty deviceNameString, SimpleStringProperty deviceAddressString, SimpleStringProperty plateIpString) {
+    public VBox createDeviceDialog(SimpleStringProperty linkTypeString, SimpleStringProperty linkAddressString, SimpleStringProperty deviceTypeString, SimpleStringProperty deviceNameString, SimpleStringProperty deviceAddressString, SimpleStringProperty plateIpString) {
         ComboBox<String> linkType = new ComboBox<>(FXCollections.observableArrayList("COM", "TCP"));
         linkType.setEditable(false);
         linkType.setValue(linkTypeString.getValue());
@@ -220,17 +220,17 @@ public class DongluCarparkAppController implements Initializable {
         Label label3 = new Label("车牌识别ip");
         plateIp_hbox.getChildren().addAll(label3, plateIp);
 
-        vBox.getChildren().addAll(linkType_hbox, linkAddress_hbox,deviceType_hbox,deviceName_hbox, deviceAddress_hbox, plateIp_hbox);
+        vBox.getChildren().addAll(linkType_hbox, linkAddress_hbox, deviceType_hbox, deviceName_hbox, deviceAddress_hbox, plateIp_hbox);
 
-        Arrays.asList(label, label1, label2, label3,lable_deviceName,lable_deviceType).forEach(each -> {
+        Arrays.asList(label, label1, label2, label3, lable_deviceName, lable_deviceType).forEach(each -> {
             each.setPrefWidth(80);
             each.setAlignment(Pos.CENTER_RIGHT);
         });
-        Arrays.asList(linkType_hbox, linkAddress_hbox, deviceAddress_hbox, plateIp_hbox,deviceName_hbox,deviceType_hbox).forEach(each -> {
+        Arrays.asList(linkType_hbox, linkAddress_hbox, deviceAddress_hbox, plateIp_hbox, deviceName_hbox, deviceType_hbox).forEach(each -> {
             each.setAlignment(Pos.CENTER);
             VBox.setMargin(each, new Insets(15, 0, 0, 0));
         });
-        Arrays.asList(linkAddress, linkType,deviceType,deviceName, deviceAddress, plateIp).forEach(each -> each.setPrefWidth(150));
+        Arrays.asList(linkAddress, linkType, deviceType, deviceName, deviceAddress, plateIp).forEach(each -> each.setPrefWidth(150));
 
         return vBox;
     }
@@ -238,52 +238,57 @@ public class DongluCarparkAppController implements Initializable {
     public void deleteDevice_on_action() {
         TableView.TableViewSelectionModel<LinkDevice> linkDeviceTableViewSelectionModel = deviceTable.selectionModelProperty().get();
         LinkDevice selectedItem = linkDeviceTableViewSelectionModel.getSelectedItem();
-        if(selectedItem == null){
+        if (selectedItem == null) {
             Alerts.create(Alert.AlertType.INFORMATION).setTitle("错误").setHeaderText("请先选择一个设备").showAndWait();
             return;
         }
         deviceTable.getItems().remove(selectedItem);
     }
 
-    private void constructTableCellValueFactory(String[] columns,TableView<? extends AbstractDomain> tableView){
+    private void constructTableCellValueFactory(String[] columns, TableView<? extends AbstractDomain> tableView) {
         List<String> columnList = Arrays.asList(columns);
         for (int i = 0; i < columnList.size(); i++) {
             tableView.getColumns().get(i).setCellValueFactory(new PropertyValueFactory<>(columnList.get(i)));
         }
     }
 
-    public void refresh_connectionUsage_on_action(){
-        if(scheduledExecutorService != null){
+    public void refresh_connectionUsage_on_action() {
+        if (scheduledExecutorService != null) {
             return;
         }
         scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
         scheduledExecutorService.scheduleWithFixedDelay(() -> {
             ObservableList<Stage> stages = StageHelper.getStages();
-            if(stages.size() == 0 || !stages.get(0).isShowing()){
+            if (stages.size() == 0 || !stages.get(0).isShowing()) {
                 return;
             }
-            hibernateDao.deleteLeft(ConnectionUsage.class, 1000);
             List list = hibernateDao.list(ConnectionUsage.class, 0, 1000);
+            if (list != null && list.size() > 1000) {
+                hibernateDao.deleteLeft(ConnectionUsage.class, 500);
+            }
             ObservableList cardUsages = FXCollections.observableArrayList(list);
             connectionUsageTable.setItems(cardUsages);
         }, 1000, 500, TimeUnit.MILLISECONDS);
     }
-     public void refresh_cardUsage_on_action(){
-            if(scheduledExecutorService1 != null){
+
+    public void refresh_cardUsage_on_action() {
+        if (scheduledExecutorService1 != null) {
+            return;
+        }
+        scheduledExecutorService1 = Executors.newSingleThreadScheduledExecutor();
+        scheduledExecutorService1.scheduleWithFixedDelay(() -> {
+            ObservableList<Stage> stages = StageHelper.getStages();
+            if (stages.size() == 0 || !stages.get(0).isShowing()) {
                 return;
             }
-            scheduledExecutorService1 = Executors.newSingleThreadScheduledExecutor();
-            scheduledExecutorService1.scheduleWithFixedDelay(() -> {
-                ObservableList<Stage> stages = StageHelper.getStages();
-                if (stages.size() == 0 || !stages.get(0).isShowing()) {
-                    return;
-                }
-                hibernateDao.deleteLeft(CardUsage.class, 1000);
-                List list = hibernateDao.list(CardUsage.class, 0, 1000);
-                ObservableList cardUsages = FXCollections.observableArrayList(list);
-                cardUsageTable.setItems(cardUsages);
-            }, 1000, 500, TimeUnit.MILLISECONDS);
-        }
+            List list = hibernateDao.list(CardUsage.class, 0, 1000);
+            if (list != null && list.size() > 1000) {
+                hibernateDao.deleteLeft(CardUsage.class, 500);
+            }
+            ObservableList cardUsages = FXCollections.observableArrayList(list);
+            cardUsageTable.setItems(cardUsages);
+        }, 1000, 500, TimeUnit.MILLISECONDS);
+    }
 
     public void exit_on_action() {
         Platform.exit();
@@ -318,7 +323,7 @@ public class DongluCarparkAppController implements Initializable {
 
     }
 
-    private void validate(String value,String tip){
+    private void validate(String value, String tip) {
         if (Strings.isNullOrEmpty(value)) {
             Alerts.create(Alert.AlertType.ERROR).setTitle("错误").setHeaderText(tip).showAndWait();
             throw new RuntimeException(tip);
@@ -326,10 +331,10 @@ public class DongluCarparkAppController implements Initializable {
     }
 
     public void rightNowUse_on_action() {
-        validate(combo_ip.getValue(),"数据接收ip未设置");
-        validate(combo_port.getValue(),"接收端口未设置");
-        validate(combo_gangting.getValue(),"岗亭名称未设置");
-        validate(combo_ad.getValue(),"广告语未设置");
+        validate(combo_ip.getValue(), "数据接收ip未设置");
+        validate(combo_port.getValue(), "接收端口未设置");
+        validate(combo_gangting.getValue(), "岗亭名称未设置");
+        validate(combo_ad.getValue(), "广告语未设置");
         validate(combo_validateTime.getValue(), "自动校时设置");
 
         try {
@@ -354,13 +359,13 @@ public class DongluCarparkAppController implements Initializable {
         }
     }
 
-    private void loadMaxId(){
-        if(maxCardUsageId == null){
+    private void loadMaxId() {
+        if (maxCardUsageId == null) {
             Long max = hibernateDao.max(CardUsage.class);
             maxCardUsageId = new AtomicLong(max);
         }
 
-        if(maxConnectionUsageId == null){
+        if (maxConnectionUsageId == null) {
             Long max = hibernateDao.max(ConnectionUsage.class);
             maxConnectionUsageId = new AtomicLong(max);
         }
@@ -368,9 +373,9 @@ public class DongluCarparkAppController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        constructTableCellValueFactory(new String[]{"linkType", "linkAddress","deviceType","deviceName", "deviceAddress", "plateIp","deviceVersion"},deviceTable);
-        constructTableCellValueFactory(new String[]{"table_id", "identifier", "deviceName", "databaseTime"},cardUsageTable);
-        constructTableCellValueFactory(new String[]{"table_id","direction","shortContent"},connectionUsageTable);
+        constructTableCellValueFactory(new String[]{"linkType", "linkAddress", "deviceType", "deviceName", "deviceAddress", "plateIp", "deviceVersion"}, deviceTable);
+        constructTableCellValueFactory(new String[]{"table_id", "identifier", "deviceName", "databaseTime"}, cardUsageTable);
+        constructTableCellValueFactory(new String[]{"table_id", "direction", "shortContent"}, connectionUsageTable);
 
         loadMaxId();
 
@@ -396,11 +401,11 @@ public class DongluCarparkAppController implements Initializable {
     }
 
     public void clean_cardUsage_on_action() {
-        try{
+        try {
             HibernateDao hibernateDao = new HibernateDao();
-            hibernateDao.deleteLeft(CardUsage.class,0);
+            hibernateDao.deleteLeft(CardUsage.class, 0);
             Alerts.create(Alert.AlertType.INFORMATION).setTitle("提示").setHeaderText("删除成功").showAndWait();
-        }catch (Exception e){
+        } catch (Exception e) {
             Alerts.create(Alert.AlertType.ERROR).setTitle("错误").setHeaderText("删除失败").showAndWait();
         }
 

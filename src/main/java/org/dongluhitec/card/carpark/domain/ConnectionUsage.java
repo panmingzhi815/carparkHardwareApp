@@ -47,7 +47,8 @@ public class ConnectionUsage extends AbstractDomain{
     @Override
     public String toString() {
         return "ConnectionUsage{" +
-                "direction=" + direction +
+                "table_id=" + table_id +
+                ",direction=" + direction +
                 ", shortContent='" + shortContent + '\'' +
                 '}';
     }
