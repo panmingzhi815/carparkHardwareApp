@@ -5,6 +5,7 @@ import org.apache.mina.core.future.ConnectFuture;
 import org.apache.mina.core.future.ReadFuture;
 import org.apache.mina.core.future.WriteFuture;
 import org.apache.mina.core.service.IoConnector;
+import org.apache.mina.core.service.IoHandler;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.transport.serial.SerialAddress;
@@ -26,6 +27,7 @@ import java.net.SocketAddress;
 
 public class MessageTransport {
 	private static  final Logger LOGGER = LoggerFactory.getLogger(MessageTransport.class);
+
 	public enum TransportType {
 		TCP, COM
 	}
@@ -34,19 +36,26 @@ public class MessageTransport {
 	private final TransportType transportType;
 
 	private IoConnector ioConnector;
+	private ConnectFuture currentConnect;
 	private SocketAddress socketAddress;
 	private IoSession session;
+	private IoHandler ioHandler;
+	private ProtocolCodecFilter protocolCodecFilter;
 
 	public MessageTransport(String address, TransportType transportType) {
 		this.address = address;
 		this.transportType = transportType;
+		this.ioHandler = new MessageHandler();
+		this.protocolCodecFilter = new ProtocolCodecFilter(new MessageFactory(MessageTypeEnum.停车场));
 
 		switch (this.transportType) {
 			case TCP:
 				String[] split = address.split(":");
 				this.socketAddress = new InetSocketAddress(split[0], Integer.parseInt(split[1]));
+				break;
 			case COM:
 				this.socketAddress = new SerialAddress(address, 9600, DataBits.DATABITS_8, StopBits.BITS_1, Parity.NONE, FlowControl.NONE);
+				break;
 			default:
 				throw new DongluHWException("不支持的通讯类型:" + transportType);
 		}
@@ -60,7 +69,7 @@ public class MessageTransport {
 			} else {
 				ioConnector = new NioSocketConnector();
 			}
-			ioConnector.getFilterChain().addLast("codec", new ProtocolCodecFilter(new MessageFactory(MessageTypeEnum.停车场)));
+			ioConnector.getFilterChain().addLast("codec",this.protocolCodecFilter);
 			ioConnector.setHandler(new MessageHandler());
 			ioConnector.setConnectTimeoutMillis(1000);
 			this.ioConnector = ioConnector;
@@ -72,7 +81,7 @@ public class MessageTransport {
         if (!connected) {
             throw new DongluHWException("连接超时:"+address);
         }
-
+		this.currentConnect = connect;
         this.session = connect.getSession();
 	}
 
@@ -110,6 +119,7 @@ public class MessageTransport {
 			return readMsg;
 		}catch (Exception e){
 			this.ioConnector.dispose(true);
+			this.ioConnector = null;
 			throw e;
 		}finally {
 			close();
