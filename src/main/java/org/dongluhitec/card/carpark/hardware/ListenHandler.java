@@ -138,12 +138,6 @@ public class ListenHandler extends IoHandlerAdapter {
         }
     }
 
-    @Override
-    public void messageSent(IoSession session, Object message) throws Exception {
-        // TODO Auto-generated method stub
-        super.messageSent(session, message);
-    }
-
     public Device toDevice(LinkDevice linkDevice){
         Device device = new Device();
         device.setAddress(linkDevice.getLinkAddress());

@@ -24,21 +24,26 @@ import org.dongluhitec.card.carpark.util.FileUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class HardwareService {
-    public final Logger LOGGER = LoggerFactory.getLogger(HardwareService.class);
+    public final static Logger LOGGER = LoggerFactory.getLogger(HardwareService.class);
     public final int PORT = 9124;
 
-    private final ScheduledExecutorService delayCheckWebServiceRight;
+    private ScheduledExecutorService delayCheckWebServiceRight;
+    private ScheduledExecutorService delayRemoveOldPicture;
+    private ScheduledExecutorService delayLoggerDeviceRecord;
 
     public static HardwareService singleInstance;
-
     public static MessageHardware messageHardware;
     public static HibernateDao databaseDao;
     private static ListenHandler listenHandler;
@@ -56,7 +61,6 @@ public class HardwareService {
         databaseDao = new HibernateDao();
         messageHardware = new MessageHardwareImpl();
         listenHandler = new ListenHandler(messageHardware);
-        delayCheckWebServiceRight = Executors.newSingleThreadScheduledExecutor();
     }
 
     public static HardwareService getInstance(){
@@ -72,6 +76,7 @@ public class HardwareService {
         delayDownloadDeviceDateTime();
         loggingDeviceRecord();
         callbackPlateDeviceRecord();
+        delayRemoveOldPicture();
     }
 
     private void callbackPlateDeviceRecord() {
@@ -87,7 +92,7 @@ public class HardwareService {
 
         List<LinkDevice> linkDeviceList = DongluCarparkAppController.config.getLinkDeviceList();
         for (LinkDevice linkDevice : linkDeviceList) {
-            XinlutongCallback.XinlutongResult xlr = (ip, channel, plateNO, bigImage, smallImage) -> HardwareUtil.setPlateInfo(cf.getSession(),linkDevice.getDeviceName(),ip,plateNO,bigImage,smallImage);
+            XinlutongCallback.XinlutongResult xlr = (ip, channel, plateNO, bigImage, smallImage) -> HardwareUtil.setPlateInfo(cf.getSession(), linkDevice.getDeviceName(), ip, plateNO, bigImage, smallImage);
             xinlutongJNAImpl.openEx(linkDevice.getPlateIp(), xlr);
         }
     }
@@ -109,57 +114,62 @@ public class HardwareService {
     }
 
     private void loggingDeviceRecord(){
-        Timer timer = new Timer("check web connector");
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                try{
-                    Config config = DongluCarparkAppController.config;
-                    if(config == null){
-                        return;
-                    }
-                    List<LinkDevice> LinkDevice = config.getLinkDeviceList();
-                    for (LinkDevice linkDevice : LinkDevice) {
-                        Device device = toDevice(linkDevice);
-                        LOGGER.debug("开始轮询设备:{}",device.getName());
-                        long start = System.currentTimeMillis();
-                        try{
-                            if(!Strings.isNullOrEmpty(config.getAd()) && !isAlreadySendAd){
-                                ListenableFuture<Boolean> booleanListenableFuture = messageHardware.setAD(device, config.getAd());
-                                booleanListenableFuture.get(5,TimeUnit.SECONDS);
-                                isAlreadySendAd = true;
-                            }
-
-                            if(!Strings.isNullOrEmpty(config.getAd()) && !isAlreadyReadProductId){
-                                ListenableFuture<String> stringListenableFuture = messageHardware.readVersion(device);
-                                String deviceVersion = stringListenableFuture.get(5, TimeUnit.SECONDS);
-                                linkDevice.setDeviceVersion(deviceVersion);
-                                FileUtil.writeObjectToFile(config,DongluCarparkAppController.CONFIG_FILEPATH);
-                                isAlreadyReadProductId = true;
-                            }
-
-                            ListenableFuture<CarparkNowRecord> carparkReadNowRecord = messageHardware.carparkReadNowRecord(device);
-                            CarparkNowRecord carparkNowRecord = carparkReadNowRecord.get(5000,TimeUnit.MILLISECONDS);
-                            if(carparkNowRecord != null){
-                                CardUsage cardUsage = new CardUsage();
-                                cardUsage.setDeviceName(linkDevice.getDeviceName());
-                                cardUsage.setDatabaseTime(new Date());
-                                cardUsage.setIdentifier(carparkNowRecord.getCardID());
-                                databaseDao.saveCardUsage(cardUsage);
-
-                                HardwareUtil.sendCardNO(cf.getSession(), carparkNowRecord.getCardID(),carparkNowRecord.getReaderID()+"", device.getName());
-                                HardwareUtil.controlSpeed(start, 1000);
-                            }
-                            EventBusUtil.post(new EventInfo(EventInfo.EventType.硬件通讯正常, "硬件通讯恢复正常"));
-                        }catch(Exception e){
-                            EventBusUtil.post(new EventInfo(EventInfo.EventType.硬件通讯异常, "当前主机与停车场硬件设备通讯时发生异常,请检查"));
-                        }finally{
-                            HardwareUtil.controlSpeed(start, 400);
+        if(delayLoggerDeviceRecord != null){
+            return;
+        }
+        delayLoggerDeviceRecord = Executors.newSingleThreadScheduledExecutor();
+        delayLoggerDeviceRecord.scheduleWithFixedDelay(() -> {
+            try {
+                Config config = DongluCarparkAppController.config;
+                if (config == null) {
+                    return;
+                }
+                List<LinkDevice> LinkDevice = config.getLinkDeviceList();
+                for (LinkDevice linkDevice : LinkDevice) {
+                    Device device = toDevice(linkDevice);
+                    LOGGER.debug("开始轮询设备:{}", device.getName());
+                    long start = System.currentTimeMillis();
+                    try {
+                        if (!Strings.isNullOrEmpty(config.getAd()) && !isAlreadySendAd) {
+                            LOGGER.info("开始下发广告:{}", config.getAd());
+                            ListenableFuture<Boolean> booleanListenableFuture = messageHardware.setAD(device, config.getAd());
+                            booleanListenableFuture.get(5, TimeUnit.SECONDS);
+                            isAlreadySendAd = true;
                         }
+
+                        if (!isAlreadyReadProductId) {
+                            LOGGER.info("开始读取 {} 产品ID",linkDevice.getDeviceName());
+                            ListenableFuture<String> stringListenableFuture = messageHardware.readVersion(device);
+                            String deviceVersion = stringListenableFuture.get(5, TimeUnit.SECONDS);
+                            linkDevice.setDeviceVersion(deviceVersion);
+                            FileUtil.writeObjectToFile(config, DongluCarparkAppController.CONFIG_FILEPATH);
+                            isAlreadyReadProductId = true;
+                        }
+
+                        ListenableFuture<CarparkNowRecord> carparkReadNowRecord = messageHardware.carparkReadNowRecord(device);
+                        CarparkNowRecord carparkNowRecord = carparkReadNowRecord.get(5000, TimeUnit.MILLISECONDS);
+                        if (carparkNowRecord != null) {
+                            CardUsage cardUsage = new CardUsage();
+                            cardUsage.setDeviceName(linkDevice.getDeviceName());
+                            cardUsage.setDatabaseTime(new Date());
+                            cardUsage.setIdentifier(carparkNowRecord.getCardID());
+                            databaseDao.saveCardUsage(cardUsage);
+
+                            HardwareUtil.sendCardNO(cf.getSession(), carparkNowRecord.getCardID(), carparkNowRecord.getReaderID() + "", device.getName());
+                            HardwareUtil.controlSpeed(start, 1000);
+                        }
+                        EventBusUtil.post(new EventInfo(EventInfo.EventType.硬件通讯正常, "硬件通讯恢复正常"));
+                    } catch (Exception e) {
+                        LOGGER.error("轮询设备时发生异常", e);
+                        EventBusUtil.post(new EventInfo(EventInfo.EventType.硬件通讯异常, "当前主机与停车场硬件设备通讯时发生异常,请检查"));
+                    } finally {
+                        HardwareUtil.controlSpeed(start, 400);
                     }
-                }catch(Exception ignored){}
+                }
+            } catch (Exception ignored) {
+                LOGGER.error("读取记录时发生错误", ignored);
             }
-        },5000,100);
+        }, 3000, 100, TimeUnit.MILLISECONDS);
     }
 
     private void delayDownloadDeviceDateTime(){
@@ -217,6 +227,10 @@ public class HardwareService {
 
 
     private void delayCheckWebServiceRight(){
+        if(delayCheckWebServiceRight != null){
+            return;
+        }
+        delayCheckWebServiceRight = Executors.newSingleThreadScheduledExecutor();
         delayCheckWebServiceRight.scheduleWithFixedDelay(() -> {
             try {
                 Config cs = DongluCarparkAppController.config;
@@ -268,5 +282,48 @@ public class HardwareService {
         return device;
     }
 
+
+    public void delayRemoveOldPicture(){
+        if(delayRemoveOldPicture != null){
+            return;
+        }
+        delayRemoveOldPicture = Executors.newSingleThreadScheduledExecutor();
+        delayRemoveOldPicture.scheduleWithFixedDelay(() -> {
+            Path path = Paths.get("车牌图片");
+            if (!Files.exists(path)) {
+                return;
+            }
+            if (!Files.isDirectory(path)) {
+                return;
+            }
+            try {
+                String format = HardwareUtil.simpleDateFormat.format(new Date());
+                Files.list(path).forEach(folderPath -> {
+                    try {
+                        Files.list(folderPath).forEach(subFolderPath -> {
+                            if (subFolderPath.getFileName().toString().compareTo(format) != 0) {
+                                try {
+                                    Files.list(subFolderPath).forEach(fileNamePath -> {
+                                        try {
+                                            Files.delete(fileNamePath);
+                                        } catch (IOException e) {
+                                            LOGGER.error("删除文件:" + fileNamePath.getFileName() + " 失败", e);
+                                        }
+                                    });
+                                    Files.delete(subFolderPath);
+                                } catch (Exception e) {
+                                    LOGGER.error("读取目录:" + subFolderPath.getFileName() + " 失败", e);
+                                }
+                            }
+                        });
+                    } catch (IOException e) {
+                        LOGGER.error("读取目录:" + folderPath.getFileName() + " 失败", e);
+                    }
+                });
+            } catch (IOException e) {
+                LOGGER.error("读取目录:" + path.getFileName() + " 失败", e);
+            }
+        }, 10000, 1, TimeUnit.DAYS);
+    }
 
 }

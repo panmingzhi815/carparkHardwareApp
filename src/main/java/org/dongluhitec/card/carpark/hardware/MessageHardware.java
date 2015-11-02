@@ -1,21 +1,12 @@
 package org.dongluhitec.card.carpark.hardware;
 
 import com.google.common.util.concurrent.ListenableFuture;
-import org.dongluhitec.card.carpark.connect.body.OpenDoorEnum;
 import org.dongluhitec.card.carpark.model.CarparkNowRecord;
 import org.dongluhitec.card.carpark.model.Device;
 
 import java.util.Date;
 
 public interface MessageHardware {
-
-	/**
-	 * 开门
-	 * @param device 操作设备
-	 * @param openDoorEnum 操作类型
-	 * @return ListenableFuture<Boolean> 可监听的结果
-	 */
-	ListenableFuture<Boolean> carparkOpenDoor(Device device, OpenDoorEnum openDoorEnum);
 
 	/**
 	 * 读当前记录

@@ -7,7 +7,7 @@ import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.dongluhitec.card.carpark.domain.ConnectionDirection;
 import org.dongluhitec.card.carpark.domain.ConnectionUsage;
-import org.dongluhitec.card.carpark.exception.EncryptException;
+import org.dongluhitec.card.carpark.exception.DongluServiceException;
 import org.dongluhitec.card.carpark.ui.Config;
 import org.dongluhitec.card.carpark.util.EventBusUtil;
 import org.dongluhitec.card.carpark.util.EventInfo;
@@ -27,8 +27,8 @@ public class HardwareUtil {
 
     private static String session_id;
 
-    private static SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyddMM");
-    private static SimpleDateFormat simpleDateFormat2 = new SimpleDateFormat("yyyyddMMHHmmss");
+    public static SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMdd");
+    public static SimpleDateFormat simpleDateFormat2 = new SimpleDateFormat("yyyyMMddHHmmss");
     private static Logger LOGGER = LoggerFactory.getLogger(HardwareUtil.class);
 
     public static String checkSubpackage(IoSession session, Object message) {
@@ -80,7 +80,7 @@ public class HardwareUtil {
             writeMsg(session, wm.toString(), "返回接收成功响应");
             return wm.toString();
         } catch (Exception e) {
-            throw new EncryptException("响应设备控制失败", e);
+            throw new DongluServiceException("响应设备控制失败", e);
         }
     }
 
@@ -160,16 +160,17 @@ public class HardwareUtil {
     public static void setPlateInfo(IoSession session, String deviceName, String ip, String plateNO, byte[] bigImage, byte[] smallImage) {
         try {
             String format = simpleDateFormat.format(new Date());
-            String folder = ip + File.separator + format;
+            String folder ="车牌图片" + File.separator + ip + File.separator + format;
             Path path = Paths.get(folder);
             if(Files.notExists(path,LinkOption.NOFOLLOW_LINKS)){
                 Files.createDirectories(path);
             }
 
-            Path bigImagePath = Paths.get(folder, simpleDateFormat2.format(new Date())+"_"+plateNO+"_big.jpg");
+            String formatDateTime = simpleDateFormat2.format(new Date());
+            Path bigImagePath = Paths.get(folder, formatDateTime +"_"+plateNO+"_big.jpg");
             Files.write(bigImagePath, bigImage,StandardOpenOption.CREATE);
 
-            Path smallImagePath = Paths.get(folder, simpleDateFormat2.format(new Date())+"_"+plateNO+"_small.jpg");
+            Path smallImagePath = Paths.get(folder, formatDateTime +"_"+plateNO+"_small.jpg");
             Files.write(smallImagePath, smallImage,StandardOpenOption.CREATE);
 
             Document document = DocumentHelper.createDocument();

@@ -30,7 +30,6 @@ import org.dongluhitec.card.carpark.util.FileUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.smartcardio.Card;
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
@@ -361,12 +360,12 @@ public class DongluCarparkAppController implements Initializable {
 
     private void loadMaxId() {
         if (maxCardUsageId == null) {
-            Long max = hibernateDao.max(CardUsage.class);
+            Long max = hibernateDao.count(CardUsage.class);
             maxCardUsageId = new AtomicLong(max);
         }
 
         if (maxConnectionUsageId == null) {
-            Long max = hibernateDao.max(ConnectionUsage.class);
+            Long max = hibernateDao.count(ConnectionUsage.class);
             maxConnectionUsageId = new AtomicLong(max);
         }
     }
@@ -408,6 +407,6 @@ public class DongluCarparkAppController implements Initializable {
         } catch (Exception e) {
             Alerts.create(Alert.AlertType.ERROR).setTitle("错误").setHeaderText("删除失败").showAndWait();
         }
-
     }
+
 }

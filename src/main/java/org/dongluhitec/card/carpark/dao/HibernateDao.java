@@ -14,14 +14,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class HibernateDao
 {
     public static Logger LOGGER = LoggerFactory.getLogger(HibernateDao.class);
     private static SessionFactory sessionFactory;
-    private static Object synObj = new Object();
+    private static final Object synObj = new Object();
 
     static
     {
@@ -62,7 +60,7 @@ public class HibernateDao
     public void saveCardUsage(CardUsage o)
     {
         synchronized (synObj){
-            Long max = max(CardUsage.class);
+            Long max = count(CardUsage.class);
             o.setTable_id(max+1);
 
             save(o);
@@ -72,7 +70,7 @@ public class HibernateDao
     public void saveConnectionUsage(ConnectionUsage o)
     {
         synchronized (synObj){
-            Long max = max(ConnectionUsage.class);
+            Long max = count(ConnectionUsage.class);
             o.setTable_id(max+1);
 
             save(o);
@@ -107,11 +105,11 @@ public class HibernateDao
         }
     }
 
-    public Long max(Class<? extends AbstractDomain> cls)
+    public Long count(Class<? extends AbstractDomain> cls)
     {
         try (Session session = getSession()) {
             Criteria criteria = session.createCriteria(cls);
-            criteria.setProjection(Projections.max("table_id"));
+            criteria.setProjection(Projections.count("table_id"));
             Object o = criteria.uniqueResult();
             long l = o == null ? 0 : (Long) o;
             LOGGER.debug("查询 {} 最大id {} 成功", cls.getName(),l);
@@ -123,20 +121,22 @@ public class HibernateDao
 
     public void deleteLeft(Class<? extends AbstractDomain> cls, int left)
     {
-        try (Session session = getSession()) {
-            Criteria criteria = session.createCriteria(cls);
-            criteria.setProjection(Projections.max("table_id"));
-            Long o = (Long) criteria.uniqueResult();
-            if (o == null) {
-                return;
+        synchronized (synObj){
+            try (Session session = getSession()) {
+                Criteria criteria = session.createCriteria(cls);
+                criteria.setProjection(Projections.max("table_id"));
+                Long o = (Long) criteria.uniqueResult();
+                if (o == null) {
+                    return;
+                }
+                Transaction transaction = session.beginTransaction();
+                Query query = session.createQuery("delete from " + cls.getSimpleName() + " where table_id <= " + (o - left));
+                query.executeUpdate();
+                transaction.commit();
+                LOGGER.debug("删除 {} 只剩 {} 条成功 ", cls.getName(), Integer.valueOf(left));
+            } catch (HibernateException e) {
+                throw new DongluServiceException("删除" + cls.getName() + "失败", e);
             }
-            Transaction transaction = session.beginTransaction();
-            Query query = session.createQuery("delete from " + cls.getSimpleName() + " where table_id < " + (o.longValue() - left));
-            query.executeUpdate();
-            transaction.commit();
-            LOGGER.debug("删除 {} 只剩 {} 条成功 ", cls.getName(), Integer.valueOf(left));
-        } catch (HibernateException e) {
-            throw new DongluServiceException("删除" + cls.getName() + "失败", e);
         }
     }
 }

@@ -18,11 +18,14 @@ import org.dongluhitec.card.carpark.connect.body.ScreenVoiceDoorBody;
 import org.dongluhitec.card.carpark.connect.exception.DongluHWException;
 import org.dongluhitec.card.carpark.connect.filterChain.MessageFactory;
 import org.dongluhitec.card.carpark.connect.util.ByteUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 
 public class MessageTransport {
+	private static  final Logger LOGGER = LoggerFactory.getLogger(MessageTransport.class);
 	public enum TransportType {
 		TCP, COM
 	}
@@ -32,17 +35,26 @@ public class MessageTransport {
 
 	private IoConnector ioConnector;
 	private SocketAddress socketAddress;
-	private ConnectFuture connect;
 	private IoSession session;
 
 	public MessageTransport(String address, TransportType transportType) {
 		this.address = address;
 		this.transportType = transportType;
+
+		switch (this.transportType) {
+			case TCP:
+				String[] split = address.split(":");
+				this.socketAddress = new InetSocketAddress(split[0], Integer.parseInt(split[1]));
+			case COM:
+				this.socketAddress = new SerialAddress(address, 9600, DataBits.DATABITS_8, StopBits.BITS_1, Parity.NONE, FlowControl.NONE);
+			default:
+				throw new DongluHWException("不支持的通讯类型:" + transportType);
+		}
 	}
 
 	public void open() {
 		if (ioConnector == null) {
-			IoConnector ioConnector = null;
+			IoConnector ioConnector;
 			if (transportType == TransportType.COM) {
 				ioConnector = new SerialConnector();
 			} else {
@@ -54,11 +66,11 @@ public class MessageTransport {
 			this.ioConnector = ioConnector;
 		}
 		
-		ConnectFuture connect = ioConnector.connect(getSocketAddress());
+		ConnectFuture connect = ioConnector.connect(this.socketAddress);
         boolean connected = connect.awaitUninterruptibly(200);
 
         if (!connected) {
-            throw new DongluHWException("连接超时");
+            throw new DongluHWException("连接超时:"+address);
         }
 
         this.session = connect.getSession();
@@ -72,53 +84,39 @@ public class MessageTransport {
         }
 	}
 
-	private SocketAddress getSocketAddress() {
-		if (socketAddress != null) {
-			return socketAddress;
-		}
-		switch (this.transportType) {
-		case TCP:
-			String[] split = address.split(":");
-			return new InetSocketAddress(split[0], Integer.parseInt(split[1]));
-		case COM:
-			return new SerialAddress(address, 9600, DataBits.DATABITS_8, StopBits.BITS_1, Parity.NONE, FlowControl.NONE);
-		default:
-			throw new DongluHWException("不支持的通讯类型:" + transportType);
-		}
-	}
-
 	public synchronized Message<?> sendMessage(Message<?> message,long waitTime) {
 		try {
+			byte[] sendBytes = message.toBytes();
 			open();
 
 			WriteFuture write = session.write(message);
-			boolean awaitUninterruptibly2 = write.awaitUninterruptibly(100);
+			boolean awaitUninterruptibly2 = write.awaitUninterruptibly(200);
 			if(!awaitUninterruptibly2){
-				throw new DongluHWException("发送消息超时");
+				throw new DongluHWException("发送消息超时",write.getException());
 			}
-			if(message.getBody() instanceof ScreenVoiceDoorBody){
-				System.out.println("发送消息"+ ByteUtils.byteArrayToHexString(message.toBytes()));
-			}
+			LOGGER.info("发送消息:{}", ByteUtils.byteArrayToHexString(sendBytes));
 			session.getConfig().setUseReadOperation(true);
 			ReadFuture read = session.read();
-			boolean awaitUninterruptibly = read.awaitUninterruptibly(300);
+			boolean awaitUninterruptibly = read.awaitUninterruptibly(waitTime);
 			if(!awaitUninterruptibly){
-				throw new DongluHWException("等待消息超时");
+				throw new DongluHWException("等待消息超时",read.getException());
 			}
 			Message<?> readMsg = (Message<?>) read.getMessage();
 			if(readMsg.getBody() instanceof ScreenVoiceDoorBody){				
-				System.out.println("接收消息"+ByteUtils.byteArrayToHexString(readMsg.toBytes()));
+				LOGGER.info("收到消息:{}", ByteUtils.byteArrayToHexString(readMsg.toBytes()));
 			}
 			session.getConfig().setUseReadOperation(false);
 			
 			return readMsg;
+		}catch (Exception e){
+			this.ioConnector.dispose(true);
+			throw e;
 		}finally {
 			close();
 		}
-
 	}
 	
-	public synchronized Message<?> sendMessage(Message<?> message) {
+	public Message<?> sendMessage(Message<?> message) {
 		return sendMessage(message,300);
 	}
 

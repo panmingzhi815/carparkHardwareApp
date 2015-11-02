@@ -6,7 +6,6 @@ import com.google.common.util.concurrent.MoreExecutors;
 import org.dongluhitec.card.carpark.connect.Message;
 import org.dongluhitec.card.carpark.connect.MessageTransport;
 import org.dongluhitec.card.carpark.connect.body.CarparkNowRecordBody;
-import org.dongluhitec.card.carpark.connect.body.OpenDoorEnum;
 import org.dongluhitec.card.carpark.connect.body.ProductIDBody;
 import org.dongluhitec.card.carpark.connect.body.SimpleBody;
 import org.dongluhitec.card.carpark.hardware.MessageFactory;
@@ -43,23 +42,7 @@ public class MessageHardwareImpl implements MessageHardware {
 		transportMap.put(key, messageTransport);
 		return messageTransport;
 	}
-	
-	@Override
-	public ListenableFuture<Boolean> carparkOpenDoor(final Device device,OpenDoorEnum openDoorEnum){
-		LOGGER.debug("carpark open door for :{}" , device);
-		final Message<?> msg = MessageFactory.createOpenDoorMsg(device, openDoorEnum);
 
-		return listeningDecorator.submit(() -> {
-            MessageTransport messageTransport = getMessageTransport(device);
-            Message<?> sendMessage = messageTransport.sendMessage(msg,1000);
-            if(sendMessage == null){
-                return null;
-            }
-            SimpleBody body = (SimpleBody)sendMessage.getBody();
-            return body.getSimpleBody() == 'y';
-        });
-	}
-	
 	@Override
 	public ListenableFuture<CarparkNowRecord> carparkReadNowRecord(final Device device){
 		LOGGER.debug("read carpark current record for :{}" , device);
