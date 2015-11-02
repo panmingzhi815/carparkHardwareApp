@@ -301,7 +301,7 @@ public class DongluCarparkAppController implements Initializable {
         ArrayList<String> labels = new ArrayList<>();
         labels.add("公司名称：深圳市东陆高新实业有限公司");
         labels.add("软件名称：停车场对接底层");
-        labels.add("软件版本：1.0.0.1");
+        labels.add("软件版本：1.0.0.2");
         labels.add("授权组织：" + DongluCarparkApp.softPrivilegeGroupName);
         labels.add("技术支持：26992770");
 
