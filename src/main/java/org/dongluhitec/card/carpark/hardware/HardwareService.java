@@ -157,7 +157,12 @@ public class HardwareService {
 
                             HardwareUtil.sendCardNO(cf.getSession(), carparkNowRecord.getCardID(), carparkNowRecord.getReaderID() + "", device.getName());
                             HardwareUtil.controlSpeed(start, 1000);
-                        }
+
+                            device.setArea("255.1");
+                            ListenableFuture<CarparkNowRecord> carparkNowRecordListenableFuture = messageHardware.carparkReadNowRecord(device);
+                            carparkNowRecordListenableFuture.get(5000, TimeUnit.MILLISECONDS);
+                        }else{}
+
                         EventBusUtil.post(new EventInfo(EventInfo.EventType.硬件通讯正常, "硬件通讯恢复正常"));
                     } catch (Exception e) {
                         LOGGER.error("轮询设备时发生异常", e);
@@ -169,7 +174,7 @@ public class HardwareService {
             } catch (Exception ignored) {
                 LOGGER.error("读取记录时发生错误", ignored);
             }
-        }, 3000, 100, TimeUnit.MILLISECONDS);
+        }, 3000, 300, TimeUnit.MILLISECONDS);
     }
 
     private void delayDownloadDeviceDateTime(){

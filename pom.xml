@@ -10,13 +10,6 @@
     <name>双层票箱通讯底层</name>
     <description>深圳市东陆高新实业有限公司为海吉星双层票箱定制通讯底层</description>
 
-    <repositories>
-        <repository>
-            <id>maven-repository</id>
-            <url>https://raw.githubusercontent.com/panmingzhi815/maven-repository/master/</url>
-        </repository>
-    </repositories>
-
     <developers>
         <developer>
             <id>pmz</id>
@@ -97,12 +90,6 @@
                     <artifactId>mina-core</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.boris</groupId>
-            <artifactId>winrun4j</artifactId>
-            <version>0.4.5</version>
         </dependency>
 
         <dependency>

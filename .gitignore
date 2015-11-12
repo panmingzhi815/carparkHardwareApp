@@ -1,0 +1,5 @@
+/target/
+**/database/
+/车牌图片/
+.idea/
+*.log
