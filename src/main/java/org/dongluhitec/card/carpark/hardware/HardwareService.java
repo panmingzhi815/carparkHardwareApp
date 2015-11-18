@@ -158,9 +158,9 @@ public class HardwareService {
                             HardwareUtil.sendCardNO(cf.getSession(), carparkNowRecord.getCardID(), carparkNowRecord.getReaderID() + "", device.getName());
                             HardwareUtil.controlSpeed(start, 1000);
 
-                            device.setArea("255.1");
-                            ListenableFuture<CarparkNowRecord> carparkNowRecordListenableFuture = messageHardware.carparkReadNowRecord(device);
-                            carparkNowRecordListenableFuture.get(5000, TimeUnit.MILLISECONDS);
+//                            device.setArea("255.1");
+//                            ListenableFuture<CarparkNowRecord> carparkNowRecordListenableFuture = messageHardware.carparkReadNowRecord(device);
+//                            carparkNowRecordListenableFuture.get(5000, TimeUnit.MILLISECONDS);
                         }else{}
 
                         EventBusUtil.post(new EventInfo(EventInfo.EventType.硬件通讯正常, "硬件通讯恢复正常"));
@@ -308,16 +308,9 @@ public class HardwareService {
                         Files.list(folderPath).forEach(subFolderPath -> {
                             if (subFolderPath.getFileName().toString().compareTo(format) != 0) {
                                 try {
-                                    Files.list(subFolderPath).forEach(fileNamePath -> {
-                                        try {
-                                            Files.delete(fileNamePath);
-                                        } catch (IOException e) {
-                                            LOGGER.error("删除文件:" + fileNamePath.getFileName() + " 失败", e);
-                                        }
-                                    });
                                     Files.delete(subFolderPath);
-                                } catch (Exception e) {
-                                    LOGGER.error("读取目录:" + subFolderPath.getFileName() + " 失败", e);
+                                } catch (IOException e) {
+                                    LOGGER.error("删除文件:" + subFolderPath.getFileName() + " 失败", e);
                                 }
                             }
                         });
@@ -328,7 +321,7 @@ public class HardwareService {
             } catch (IOException e) {
                 LOGGER.error("读取目录:" + path.getFileName() + " 失败", e);
             }
-        }, 10000, 1, TimeUnit.DAYS);
+        }, 30, 5400, TimeUnit.SECONDS);
     }
 
 }
