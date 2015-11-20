@@ -158,9 +158,9 @@ public class HardwareService {
                             HardwareUtil.sendCardNO(cf.getSession(), carparkNowRecord.getCardID(), carparkNowRecord.getReaderID() + "", device.getName());
                             HardwareUtil.controlSpeed(start, 1000);
 
-//                            device.setArea("255.1");
-//                            ListenableFuture<CarparkNowRecord> carparkNowRecordListenableFuture = messageHardware.carparkReadNowRecord(device);
-//                            carparkNowRecordListenableFuture.get(5000, TimeUnit.MILLISECONDS);
+                            device.setArea("255.1");
+                            ListenableFuture<CarparkNowRecord> carparkNowRecordListenableFuture = messageHardware.carparkReadNowRecord(device);
+                            carparkNowRecordListenableFuture.get(5000, TimeUnit.MILLISECONDS);
                         }else{}
 
                         EventBusUtil.post(new EventInfo(EventInfo.EventType.硬件通讯正常, "硬件通讯恢复正常"));
