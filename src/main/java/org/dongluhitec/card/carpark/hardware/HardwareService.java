@@ -34,6 +34,7 @@ import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 public class HardwareService {
     public final static Logger LOGGER = LoggerFactory.getLogger(HardwareService.class);
@@ -302,26 +303,32 @@ public class HardwareService {
                 return;
             }
             try {
-                String format = HardwareUtil.simpleDateFormat.format(new Date());
-                Files.list(path).forEach(folderPath -> {
-                    try {
-                        Files.list(folderPath).forEach(subFolderPath -> {
-                            if (subFolderPath.getFileName().toString().compareTo(format) != 0) {
+                Files.list(path).forEach(ip->{
+                    try{
+                        final String format = HardwareUtil.simpleDateFormat.format(new Date());
+                        Files.list(ip).forEach(date->{
+                            if (date.getFileName().toString().compareTo(format) != 0) {
                                 try {
-                                    Files.delete(subFolderPath);
-                                } catch (IOException e) {
-                                    LOGGER.error("删除文件:" + subFolderPath.getFileName() + " 失败", e);
+                                    Files.list(date).parallel().forEach(f -> {
+                                        try {
+                                            Files.delete(f);
+                                        } catch (Exception e) {
+                                            LOGGER.error("删除文件:" + f.getFileName() + " 失败", e);
+                                        }
+                                    });
+                                } catch (Exception e) {
+                                    LOGGER.error("读取目录:" + date.getFileName() + " 失败", e);
                                 }
                             }
                         });
-                    } catch (IOException e) {
-                        LOGGER.error("读取目录:" + folderPath.getFileName() + " 失败", e);
+                    }catch (Exception e){
+                        LOGGER.error("读取目录:" + ip.getFileName() + " 失败", e);
                     }
                 });
-            } catch (IOException e) {
+            } catch (Exception e) {
                 LOGGER.error("读取目录:" + path.getFileName() + " 失败", e);
             }
-        }, 30, 5400, TimeUnit.SECONDS);
+        }, 5, 5400, TimeUnit.SECONDS);
     }
 
 }
