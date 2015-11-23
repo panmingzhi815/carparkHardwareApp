@@ -14,12 +14,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class HibernateDao
 {
     public static Logger LOGGER = LoggerFactory.getLogger(HibernateDao.class);
     private static SessionFactory sessionFactory;
     private static final Object synObj = new Object();
+    private static AtomicLong cardUsageId = new AtomicLong();
 
     static
     {
@@ -60,28 +62,29 @@ public class HibernateDao
     public void saveCardUsage(CardUsage o)
     {
         synchronized (synObj){
-            Long max = count(CardUsage.class);
-            o.setTable_id(max+1);
+            Long max = max(CardUsage.class);
+            o.setTable_id(max + 1);
 
-            save(o);
-
-            if(max > 200){
+            Long count = count(CardUsage.class);
+            if(count > 200){
                 deleteAll(CardUsage.class);
             }
+
+            save(o);
         }
     }
 
     public void saveConnectionUsage(ConnectionUsage o)
     {
         synchronized (synObj){
-            Long max = count(ConnectionUsage.class);
+            Long max = max(ConnectionUsage.class);
             o.setTable_id(max+1);
-
-            save(o);
 
             if(max > 200){
                 deleteAll(ConnectionUsage.class);
             }
+
+            save(o);
         }
     }
 
@@ -118,6 +121,20 @@ public class HibernateDao
         try (Session session = getSession()) {
             Criteria criteria = session.createCriteria(cls);
             criteria.setProjection(Projections.count("table_id"));
+            Object o = criteria.uniqueResult();
+            long l = o == null ? 0 : (Long) o;
+            LOGGER.debug("查询 {} 最大id {} 成功", cls.getName(),l);
+            return l;
+        } catch (HibernateException e) {
+            throw new DongluServiceException("查询" + cls.getName() + " 最大id失败", e);
+        }
+    }
+
+    public Long max(Class<? extends AbstractDomain> cls)
+    {
+        try (Session session = getSession()) {
+            Criteria criteria = session.createCriteria(cls);
+            criteria.setProjection(Projections.max("table_id"));
             Object o = criteria.uniqueResult();
             long l = o == null ? 0 : (Long) o;
             LOGGER.debug("查询 {} 最大id {} 成功", cls.getName(),l);

@@ -70,8 +70,6 @@ public class DongluCarparkAppController implements Initializable {
     private static ScheduledExecutorService scheduledExecutorService1;
 
     private HibernateDao hibernateDao = new HibernateDao();
-    private static AtomicLong maxCardUsageId;
-    private static AtomicLong maxConnectionUsageId;
 
     public void addDevice_on_action() {
         linkType.setValue("COM");
@@ -353,15 +351,8 @@ public class DongluCarparkAppController implements Initializable {
     }
 
     private void loadMaxId() {
-        if (maxCardUsageId == null) {
-            Long max = hibernateDao.count(CardUsage.class);
-            maxCardUsageId = new AtomicLong(max);
-        }
-
-        if (maxConnectionUsageId == null) {
-            Long max = hibernateDao.count(ConnectionUsage.class);
-            maxConnectionUsageId = new AtomicLong(max);
-        }
+        hibernateDao.deleteAll(CardUsage.class);
+        hibernateDao.deleteAll(ConnectionUsage.class);
     }
 
     @Override
