@@ -261,10 +261,7 @@ public class DongluCarparkAppController implements Initializable {
             if (stages.size() == 0 || !stages.get(0).isShowing()) {
                 return;
             }
-            List list = hibernateDao.list(ConnectionUsage.class, 0, 1000);
-            if (list != null && list.size() > 1000) {
-                hibernateDao.deleteLeft(ConnectionUsage.class, 500);
-            }
+            List list = hibernateDao.list(ConnectionUsage.class, 0, Integer.MAX_VALUE);
             ObservableList cardUsages = FXCollections.observableArrayList(list);
             connectionUsageTable.setItems(cardUsages);
         }, 1000, 500, TimeUnit.MILLISECONDS);
@@ -280,10 +277,7 @@ public class DongluCarparkAppController implements Initializable {
             if (stages.size() == 0 || !stages.get(0).isShowing()) {
                 return;
             }
-            List list = hibernateDao.list(CardUsage.class, 0, 1000);
-            if (list != null && list.size() > 1000) {
-                hibernateDao.deleteLeft(CardUsage.class, 500);
-            }
+            List list = hibernateDao.list(CardUsage.class, 0, Integer.MAX_VALUE);
             ObservableList cardUsages = FXCollections.observableArrayList(list);
             cardUsageTable.setItems(cardUsages);
         }, 1000, 500, TimeUnit.MILLISECONDS);
@@ -397,16 +391,6 @@ public class DongluCarparkAppController implements Initializable {
             Alerts.create(Alert.AlertType.ERROR).setTitle("错误").setHeaderText("读取配置文件出错").setContentText(e.getMessage()).showAndWait();
         }
 
-    }
-
-    public void clean_cardUsage_on_action() {
-        try {
-            HibernateDao hibernateDao = new HibernateDao();
-            hibernateDao.deleteLeft(CardUsage.class, 0);
-            Alerts.create(Alert.AlertType.INFORMATION).setTitle("提示").setHeaderText("删除成功").showAndWait();
-        } catch (Exception e) {
-            Alerts.create(Alert.AlertType.ERROR).setTitle("错误").setHeaderText("删除失败").showAndWait();
-        }
     }
 
 }

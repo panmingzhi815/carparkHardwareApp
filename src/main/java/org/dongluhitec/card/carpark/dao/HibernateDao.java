@@ -64,6 +64,10 @@ public class HibernateDao
             o.setTable_id(max+1);
 
             save(o);
+
+            if(max > 200){
+                deleteAll(CardUsage.class);
+            }
         }
     }
 
@@ -74,6 +78,10 @@ public class HibernateDao
             o.setTable_id(max+1);
 
             save(o);
+
+            if(max > 200){
+                deleteAll(ConnectionUsage.class);
+            }
         }
     }
 
@@ -119,21 +127,15 @@ public class HibernateDao
         }
     }
 
-    public void deleteLeft(Class<? extends AbstractDomain> cls, int left)
+    public void deleteAll(Class<? extends AbstractDomain> cls)
     {
         synchronized (synObj){
             try (Session session = getSession()) {
-                Criteria criteria = session.createCriteria(cls);
-                criteria.setProjection(Projections.max("table_id"));
-                Long o = (Long) criteria.uniqueResult();
-                if (o == null) {
-                    return;
-                }
                 Transaction transaction = session.beginTransaction();
-                Query query = session.createQuery("delete from " + cls.getSimpleName() + " where table_id <= " + (o - left));
+                Query query = session.createQuery("delete from " + cls.getSimpleName());
                 query.executeUpdate();
                 transaction.commit();
-                LOGGER.debug("删除 {} 只剩 {} 条成功 ", cls.getName(), Integer.valueOf(left));
+                LOGGER.debug("删除 {} 全部记录成功 ", cls.getName());
             } catch (HibernateException e) {
                 throw new DongluServiceException("删除" + cls.getName() + "失败", e);
             }

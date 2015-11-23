@@ -102,7 +102,6 @@
                             <ContextMenu>
                                 <items>
                                     <MenuItem mnemonicParsing="false" onAction="#refresh_cardUsage_on_action" text="刷新"/>
-                                    <MenuItem mnemonicParsing="false" onAction="#clean_cardUsage_on_action" text="清除"/>
                                 </items>
                             </ContextMenu>
                         </contextMenu>

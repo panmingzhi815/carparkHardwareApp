@@ -205,7 +205,7 @@ public class HardwareService {
             } catch (Exception e) {
                 LOGGER.error("定时校验设备时间时发生错误", e);
             }
-        }, 3000, (config == null ? 30 : config.getValidateTimeLength()), TimeUnit.MINUTES);
+        }, 1, (config == null ? 30 : config.getValidateTimeLength()), TimeUnit.MINUTES);
     }
 
     private void listenWebServiceMessage(){
