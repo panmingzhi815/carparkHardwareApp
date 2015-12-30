@@ -39,7 +39,7 @@ import java.util.TimerTask;
 public class DongluCarparkApp extends Application {
 
     private Logger LOGGER = LoggerFactory.getLogger(DongluCarparkApp.class);
-    public static String softPrivilegeGroupName = "长春海吉星";
+    public static String softPrivilegeGroupName = "海吉星";
     public static HardwareService hardwareService;
 
     private final String TITLE = "停车场底层";

@@ -262,7 +262,7 @@ public class DongluCarparkAppController implements Initializable {
             List list = hibernateDao.list(ConnectionUsage.class, 0, Integer.MAX_VALUE);
             ObservableList cardUsages = FXCollections.observableArrayList(list);
             connectionUsageTable.setItems(cardUsages);
-        }, 1000, 500, TimeUnit.MILLISECONDS);
+        }, 1000, 1000, TimeUnit.MILLISECONDS);
     }
 
     public void refresh_cardUsage_on_action() {
@@ -278,7 +278,7 @@ public class DongluCarparkAppController implements Initializable {
             List list = hibernateDao.list(CardUsage.class, 0, Integer.MAX_VALUE);
             ObservableList cardUsages = FXCollections.observableArrayList(list);
             cardUsageTable.setItems(cardUsages);
-        }, 1000, 500, TimeUnit.MILLISECONDS);
+        }, 1000, 1000, TimeUnit.MILLISECONDS);
     }
 
     public void exit_on_action() {

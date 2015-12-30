@@ -80,7 +80,8 @@ public class HibernateDao
             Long max = max(ConnectionUsage.class);
             o.setTable_id(max+1);
 
-            if(max > 200){
+            Long count = count(CardUsage.class);
+            if(count > 200){
                 deleteAll(ConnectionUsage.class);
             }
 

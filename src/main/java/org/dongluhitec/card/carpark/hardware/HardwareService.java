@@ -21,6 +21,7 @@ import org.dongluhitec.card.carpark.ui.controller.DongluCarparkAppController;
 import org.dongluhitec.card.carpark.util.EventBusUtil;
 import org.dongluhitec.card.carpark.util.EventInfo;
 import org.dongluhitec.card.carpark.util.FileUtil;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -305,9 +306,10 @@ public class HardwareService {
             try {
                 Files.list(path).forEach(ip->{
                     try{
-                        final String format = HardwareUtil.simpleDateFormat.format(new Date());
+                        Date deleteDay = new DateTime().minusDays(3).toDate();
+                        final String format = HardwareUtil.simpleDateFormat.format(deleteDay);
                         Files.list(ip).forEach(date->{
-                            if (date.getFileName().toString().compareTo(format) != 0) {
+                            if (date.getFileName().toString().compareTo(format) < 0) {
                                 try {
                                     Files.list(date).parallel().forEach(f -> {
                                         try {
