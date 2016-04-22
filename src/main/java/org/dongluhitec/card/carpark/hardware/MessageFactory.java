@@ -2,6 +2,7 @@ package org.dongluhitec.card.carpark.hardware;
 
 import org.dongluhitec.card.carpark.connect.*;
 import org.dongluhitec.card.carpark.connect.body.*;
+import org.dongluhitec.card.carpark.connect.util.ByteUtils;
 import org.dongluhitec.card.carpark.connect.util.SerialDeviceAddress;
 import org.dongluhitec.card.carpark.model.Device;
 
@@ -109,5 +110,13 @@ public class MessageFactory {
 		MessageHeader mh = new MessageHeader(serialDeviceAddress,DirectonType.请求,MessageConstance.Message_ReadVersion,EmptyBody.LENGTH);
 
 		return new Message<MessageBody>(mh, eb);
+	}
+
+	public static void main(String[] args) {
+		Device device = new Device();
+		device.setAddress("COM1");
+		device.setArea("1.1");
+		Message<?> readNowRecordMsg = createADScreenMsg(device,"天津海吉星欢迎您");
+		System.out.println(ByteUtils.byteArrayToHexString(readNowRecordMsg.toBytes()));
 	}
 }

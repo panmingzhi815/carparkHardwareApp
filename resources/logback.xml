@@ -10,11 +10,23 @@
     <appender name="SERVICES_MESSAGE_DEBUG" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>log/message.txt</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <!-- rollover daily -->
             <fileNamePattern>log/message-%d{yyyy-MM-dd}.%i.txt</fileNamePattern>
-            <maxHistory>10</maxHistory>
+            <maxHistory>2</maxHistory>
             <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-                <!-- or whenever the file size reaches 100MB -->
+                <maxFileSize>10MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="sendPlateLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>log/sendPlateLog.txt</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>log/sendPlateLog-%d{yyyy-MM-dd}.%i.txt</fileNamePattern>
+            <maxHistory>2</maxHistory>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
                 <maxFileSize>10MB</maxFileSize>
             </timeBasedFileNamingAndTriggeringPolicy>
         </rollingPolicy>
@@ -25,8 +37,12 @@
 
  	<logger name="org.hibernate" level="ERROR"></logger>
 
-    <logger name="org.dongluhitec.card.carpark" level="info">
+    <logger name="org.dongluhitec.card.carpark" level="error">
         <appender-ref ref="SERVICES_MESSAGE_DEBUG"/>
+    </logger>
+
+    <logger name="sendPlateLog" level="info">
+        <appender-ref ref="sendPlateLog"/>
     </logger>
 
 </configuration>

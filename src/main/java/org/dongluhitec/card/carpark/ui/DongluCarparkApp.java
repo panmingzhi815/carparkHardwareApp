@@ -39,6 +39,7 @@ import java.util.TimerTask;
 public class DongluCarparkApp extends Application {
 
     private Logger LOGGER = LoggerFactory.getLogger(DongluCarparkApp.class);
+    public static Logger sendPlateLog = LoggerFactory.getLogger("sendPlateLog");
     public static String softPrivilegeGroupName = "海吉星";
     public static HardwareService hardwareService;
 

@@ -20,16 +20,18 @@ import java.nio.file.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class HardwareUtil {
 
+    private static AtomicLong plateSize = new AtomicLong(0);
     private static final String MSG_PRE = "message_prefix";
-
     private static String session_id;
 
     public static SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMdd");
     public static SimpleDateFormat simpleDateFormat2 = new SimpleDateFormat("yyyyMMddHHmmss");
     private static Logger LOGGER = LoggerFactory.getLogger(HardwareUtil.class);
+    public static Logger sendPlateLog = LoggerFactory.getLogger("sendPlateLog");
 
     public static String checkSubpackage(IoSession session, Object message) {
         String msg = ((String) message).trim();
@@ -185,6 +187,7 @@ public class HardwareUtil {
 
             WebMessage wm = new WebMessage(WebMessageType.发送车牌, document.getRootElement().asXML());
             HardwareUtil.writeMsg(session, wm.toString(), "发送车牌记录");
+            sendPlateLog.info("{} :发送车牌到对接服务器，车牌号：{} 图片地址:{}",plateSize.getAndAdd(1),plateNO,bigImagePath.toFile().getAbsolutePath());
         } catch (Exception e) {
             e.printStackTrace();
         }
