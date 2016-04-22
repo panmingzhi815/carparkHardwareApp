@@ -1,6 +1,7 @@
 package org.dongluhitec.card.carpark.hardware;
 
 import com.google.common.util.concurrent.Uninterruptibles;
+import org.apache.mina.core.future.ConnectFuture;
 import org.apache.mina.core.session.IoSession;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
@@ -110,9 +111,6 @@ public class HardwareUtil {
                 deviceElement.addElement("deviceDisplayAndVoiceInside").setText("true");
                 deviceElement.addElement("deviceDisplayAndVoiceOutside").setText("true");
                 deviceElement.addElement("deviceDisplaySupportChinese").setText("true");
-//				deviceElement.addElement("deviceDisplayAndVoiceInside").setText(device.getSupportInsideVoice().equals("支持") == true ? "true" : "false");
-//				deviceElement.addElement("deviceDisplayAndVoiceOutside").setText(device.getSupportOutsideVoice().equals("支持") == true ? "true" : "false");
-//				deviceElement.addElement("deviceDisplaySupportChinese").setText(device.getSupportChinese().equals("支持") == true ? "true" : "false");
             });
             WebMessage wm = new WebMessage(WebMessageType.设备信息, dom.getRootElement().asXML());
             HardwareUtil.writeMsg(session, wm.toString(),"发送设备信息");
@@ -159,8 +157,9 @@ public class HardwareUtil {
         }
     }
 
-    public static void setPlateInfo(IoSession session, String deviceName, String ip, String plateNO, byte[] bigImage, byte[] smallImage) {
+    public static void setPlateInfo(ConnectFuture session, String deviceName, String ip, String plateNO, byte[] bigImage, byte[] smallImage) {
         try {
+            LOGGER.debug("收在车牌:{},该车牌将先保存到本地",plateNO);
             String format = simpleDateFormat.format(new Date());
             String folder ="车牌图片" + File.separator + ip + File.separator + format;
             Path path = Paths.get(folder);
@@ -171,9 +170,11 @@ public class HardwareUtil {
             String formatDateTime = simpleDateFormat2.format(new Date());
             Path bigImagePath = Paths.get(folder, formatDateTime +"_"+plateNO+"_big.jpg");
             Files.write(bigImagePath, bigImage,StandardOpenOption.CREATE);
+            LOGGER.debug("保存大图成功:{}",bigImagePath.toString());
 
             Path smallImagePath = Paths.get(folder, formatDateTime +"_"+plateNO+"_small.jpg");
             Files.write(smallImagePath, smallImage,StandardOpenOption.CREATE);
+            LOGGER.debug("保存小图成功:{}",smallImagePath.toString());
 
             Document document = DocumentHelper.createDocument();
             Element root = document.addElement("dongluCarpark");
@@ -186,8 +187,13 @@ public class HardwareUtil {
             root.addElement("plateSmallImage").setText(smallImagePath.toFile().getAbsolutePath());
 
             WebMessage wm = new WebMessage(WebMessageType.发送车牌, document.getRootElement().asXML());
-            HardwareUtil.writeMsg(session, wm.toString(), "发送车牌记录");
-            sendPlateLog.info("{} :发送车牌到对接服务器，车牌号：{} 图片地址:{}",plateSize.getAndAdd(1),plateNO,bigImagePath.toFile().getAbsolutePath());
+            if (session != null && session.getSession() != null){
+                HardwareUtil.writeMsg(session.getSession(), wm.toString(), "发送车牌记录");
+                sendPlateLog.info("{} :发送车牌到对接服务器，车牌号：{} 图片地址:{}",plateSize.getAndAdd(1),plateNO,bigImagePath.toFile().getAbsolutePath());
+            }else{
+                sendPlateLog.warn("对接服务器未开,将不发送车牌消息");
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
         }

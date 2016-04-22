@@ -38,7 +38,7 @@ import java.util.TimerTask;
  */
 public class DongluCarparkApp extends Application {
 
-    private Logger LOGGER = LoggerFactory.getLogger(DongluCarparkApp.class);
+    private static Logger LOGGER = LoggerFactory.getLogger(DongluCarparkApp.class);
     public static Logger sendPlateLog = LoggerFactory.getLogger("sendPlateLog");
     public static String softPrivilegeGroupName = "海吉星";
     public static HardwareService hardwareService;
@@ -60,7 +60,8 @@ public class DongluCarparkApp extends Application {
 
     public static void main(String[] args) {
         if(args.length > 0 && args[0] != null){
-            softPrivilegeGroupName = args[0];
+            System.setProperty("deleteImageDay",args[0]);
+            LOGGER.info("系统将默认删除{}天前的图片",args[0]);
         }
         DongluCarparkApp.launch();
     }

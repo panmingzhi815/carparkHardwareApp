@@ -25,17 +25,17 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
 
 public class HardwareService {
     public final static Logger LOGGER = LoggerFactory.getLogger(HardwareService.class);
@@ -94,7 +94,7 @@ public class HardwareService {
 
         List<LinkDevice> linkDeviceList = DongluCarparkAppController.config.getLinkDeviceList();
         for (LinkDevice linkDevice : linkDeviceList) {
-            XinlutongCallback.XinlutongResult xlr = (ip, channel, plateNO, bigImage, smallImage) -> HardwareUtil.setPlateInfo(cf.getSession(), linkDevice.getDeviceName(), ip, plateNO, bigImage, smallImage);
+            XinlutongCallback.XinlutongResult xlr = (ip, channel, plateNO, bigImage, smallImage) -> HardwareUtil.setPlateInfo(cf, linkDevice.getDeviceName(), ip, plateNO, bigImage, smallImage);
             xinlutongJNAImpl.openEx(linkDevice.getPlateIp(), xlr);
         }
     }
@@ -306,7 +306,8 @@ public class HardwareService {
             try {
                 Files.list(path).forEach(ip->{
                     try{
-                        Date deleteDay = new DateTime().minusDays(3).toDate();
+                        String deleteImageDay = System.getProperty("deleteImageDay", "3");
+                        Date deleteDay = new DateTime().minusDays(Integer.parseInt(deleteImageDay)).toDate();
                         final String format = HardwareUtil.simpleDateFormat.format(deleteDay);
                         Files.list(ip).forEach(date->{
                             if (date.getFileName().toString().compareTo(format) < 0) {
