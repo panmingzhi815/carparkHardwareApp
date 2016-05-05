@@ -13,6 +13,13 @@ public class SetDateTimeBody implements MessageBody {
 
 	private Date date;
 
+	public SetDateTimeBody() {
+	}
+
+	public SetDateTimeBody(Date date) {
+		this.date = date;
+	}
+
 	public void setDate(Date date) {
 		this.date = date;
 	}
@@ -23,13 +30,12 @@ public class SetDateTimeBody implements MessageBody {
 
 	@Override
 	public void initContent(byte[] array) throws DongluInvalidMessageException {
-		this.date = new BCDDateTimeAdaptor(array, 0, true).getDate();
-
+		this.date = new BCDDateTimeAdaptor(array, 0, false).getDate();
 	}
 
 	@Override
 	public byte[] toBytes() {
-		return new BCDDateTimeAdaptor(this.date).getBytes(true);
+		return new BCDDateTimeAdaptor(this.date).getBytes6();
 	}
 
 	@Override

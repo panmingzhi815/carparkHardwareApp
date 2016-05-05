@@ -25,7 +25,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Optional;
@@ -84,7 +86,6 @@ public class DongluCarparkApp extends Application {
         primaryStage.setScene(scene);
         primaryStage.getIcons().add(set);
         primaryStage.setTitle(TITLE + "(" + softPrivilegeGroupName + ")");
-//        primaryStage.show();
         primaryStage.setOnCloseRequest(event -> {
             event.consume();
             primaryStage.hide();
@@ -104,7 +105,7 @@ public class DongluCarparkApp extends Application {
                     hardwareService.start();
                     LOGGER.info("启动硬件服务成功");
                 } catch (Exception e) {
-                    LOGGER.info("启动硬件服务时发生错误", e);
+                    LOGGER.error("启动硬件服务时发生错误", e);
                     Platform.runLater(() -> {
                         ButtonType save = new ButtonType("保存错误信息到文件");
                         ButtonType cancel = new ButtonType("取消");
@@ -115,8 +116,11 @@ public class DongluCarparkApp extends Application {
                             DirectoryChooser directoryChooser = new DirectoryChooser();
                             directoryChooser.setTitle("请选择在保存的路径");
                             File file = directoryChooser.showDialog(stage);
+                            if (file == null) {
+                                return;
+                            }
                             try {
-                                Files.write(Paths.get(file.getCanonicalPath(), "log.txt"), e.getMessage().getBytes());
+                                e.printStackTrace(new PrintStream(Files.newOutputStream(Paths.get(file.getCanonicalPath(), "log.txt")),true));
                                 String headerText1 = "保存成功！\r\n你可将该错误日志文件发给开发商，快速查找解决方案";
                                 Alerts.create(Alert.AlertType.INFORMATION).setTitle("提示").setHeaderText(headerText1).showAndWait();
                             } catch (IOException e1) {

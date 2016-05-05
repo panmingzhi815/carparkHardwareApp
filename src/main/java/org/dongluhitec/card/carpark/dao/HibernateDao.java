@@ -13,6 +13,7 @@ import org.hibernate.service.ServiceRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -158,5 +159,13 @@ public class HibernateDao
                 throw new DongluServiceException("删除" + cls.getName() + "失败", e);
             }
         }
+    }
+
+    public void saveCardUsage(String deviceName, String cardIdentifier, Date date) {
+        CardUsage cardUsage = new CardUsage();
+        cardUsage.setIdentifier(cardIdentifier);
+        cardUsage.setDatabaseTime(date);
+        cardUsage.setDeviceName(deviceName);
+        saveCardUsage(cardUsage);
     }
 }

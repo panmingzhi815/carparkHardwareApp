@@ -37,11 +37,11 @@
 
  	<logger name="org.hibernate" level="ERROR"></logger>
 
-    <logger name="org.dongluhitec.card.carpark" level="ERROR">
+    <logger name="org.dongluhitec.card.carpark" level="DEBUG">
         <appender-ref ref="SERVICES_MESSAGE_DEBUG"/>
     </logger>
 
-    <logger name="sendPlateLog" level="ERROR">
+    <logger name="sendPlateLog" level="DEBUG">
         <appender-ref ref="sendPlateLog"/>
     </logger>
 

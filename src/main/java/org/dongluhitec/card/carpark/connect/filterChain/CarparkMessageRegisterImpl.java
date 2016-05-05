@@ -17,6 +17,8 @@ public class CarparkMessageRegisterImpl extends AbstractMessageRegister {
 		requestMap.put(MessageConstance.Message_SetTime, new MessageBodyInfo(SetDateTimeBody.LENGTH,SetDateTimeBody.class));
 		requestMap.put(MessageConstance.Message_ReadVersion, new MessageBodyInfo(EmptyBody.LENGTH,EmptyBody.class));
 		requestMap.put(MessageConstance.Message_AD, new MessageBodyInfo(ADScreenBody.LENGTH,ADScreenBody.class));
+		requestMap.put(MessageConstance.Message_ReadIp, new MessageBodyInfo(EmptyBody.LENGTH,EmptyBody.class));
+		requestMap.put(MessageConstance.Message_SetIp, new MessageBodyInfo(TcpAddressBody.LENGTH,TcpAddressBody.class));
 
 	}
 
@@ -27,6 +29,8 @@ public class CarparkMessageRegisterImpl extends AbstractMessageRegister {
 		responseMap.put(MessageConstance.Message_ScreenVoiceDoor, new MessageBodyInfo(SimpleBody.LENGTH,SimpleBody.class));
 		responseMap.put(MessageConstance.Message_AD, new MessageBodyInfo(SimpleBody.LENGTH,SimpleBody.class));
 		responseMap.put(MessageConstance.Message_ReadVersion, new MessageBodyInfo(ProductIDBody.LENGTH,ProductIDBody.class));
+		responseMap.put(MessageConstance.Message_ReadIp, new MessageBodyInfo(TcpAddressBody.LENGTH,TcpAddressBody.class));
+		responseMap.put(MessageConstance.Message_SetIp, new MessageBodyInfo(SimpleBody.LENGTH,SimpleBody.class));
 	}
 
 }

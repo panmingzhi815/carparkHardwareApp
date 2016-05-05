@@ -19,6 +19,7 @@ public class BCDDateTimeAdaptor {
 	// in format YYMMDDHHMM
 	// Calendar instance = Calendar.getInstance();
 	private DateTime dateTime;
+	private byte secondBCD;
 
 	public BCDDateTimeAdaptor(int year, int month, int day, int hour, int min) {
 		dateTime = new DateTime(year, month, day, hour, min);
@@ -28,6 +29,7 @@ public class BCDDateTimeAdaptor {
 		DateTime dateTime2 = new DateTime(date);
 		dateTime = dateTime2.withMillisOfSecond(0);
 	}
+
 
 	public BCDDateTimeAdaptor(byte[] array, int start, boolean hasWeekByte)
 			throws DongluInvalidMessageException {
@@ -43,10 +45,6 @@ public class BCDDateTimeAdaptor {
 				- (hasWeekByte ? 0 : 1)]);
 
 		dateTime = new DateTime(year, month, day, hour, min);
-	}
-
-	public byte[] getBytes() {
-		return this.getBytes(false);
 	}
 
 	public Date getDate() {
@@ -69,6 +67,20 @@ public class BCDDateTimeAdaptor {
 		if (hasWeekByte) {
 			rr[BCDDateTimeAdaptor.BIT_OFF_WEEK] = this.getWeekdayBCD();
 		}
+
+		return rr;
+	}
+
+	public byte[] getBytes6() {
+		byte[] rr = new byte[6];
+
+		rr[0] = this.getYearBCD();
+		rr[1] = this.getMonthBCD();
+		rr[2] = this.getDayBCD();
+
+		rr[3] = this.getHourBCD();
+		rr[4] = this.getMinuteBCD();
+		rr[5] = this.getSecondBCD();
 
 		return rr;
 	}
@@ -110,6 +122,10 @@ public class BCDDateTimeAdaptor {
 
 	public byte getMinuteBCD() {
 		int i = this.dateTime.getMinuteOfHour();
+		return Utils.BCDConvertFromIntToByte(i);
+	}
+	public byte getSecondBCD() {
+		int i = this.dateTime.getSecondOfMinute();
 		return Utils.BCDConvertFromIntToByte(i);
 	}
 

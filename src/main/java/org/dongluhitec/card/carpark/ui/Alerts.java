@@ -3,6 +3,8 @@ package org.dongluhitec.card.carpark.ui;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
@@ -10,7 +12,7 @@ import java.util.Optional;
  * Created by panmingzhi815 on 2015/10/8 0008.
  */
 public class Alerts {
-
+    private static Logger LOGGER = LoggerFactory.getLogger(Alerts.class);
     private Alert alert;
 
     private Alerts(Alert.AlertType alertType) {
@@ -59,6 +61,12 @@ public class Alerts {
 
     public Alerts setContentText(String contentText) {
         alert.setContentText(contentText);
+        return this;
+    }
+
+    public Alerts setException(Exception exception) {
+        LOGGER.error(alert.getHeaderText(),exception);
+        alert.setContentText(exception.getMessage());
         return this;
     }
 }

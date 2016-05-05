@@ -1,0 +1,59 @@
+2016-05-04 13:45:07.398 [Timer-1] ERROR o.d.c.c.hardware.HardwareService - 打开初始化外接服务监听失败
+2016-05-04 15:44:49.997 [Timer-1] ERROR o.d.c.c.hardware.HardwareService - 打开初始化外接服务监听失败
+2016-05-04 15:47:28.168 [Timer-1] ERROR o.d.c.c.hardware.HardwareService - 打开初始化外接服务监听失败
+2016-05-04 15:48:25.265 [Timer-1] ERROR o.d.c.c.hardware.HardwareService - 打开初始化外接服务监听失败
+2016-05-04 15:48:48.342 [Timer-1] ERROR o.d.c.c.hardware.HardwareService - 打开初始化外接服务监听失败
+2016-05-04 15:51:51.555 [Timer-1] ERROR o.d.c.c.hardware.HardwareService - 打开初始化外接服务监听失败
+2016-05-04 15:52:03.288 [Timer-1] ERROR o.d.c.c.hardware.HardwareService - 打开初始化外接服务监听失败
+2016-05-04 15:52:03.341 [Timer-1] ERROR o.d.card.carpark.ui.DongluCarparkApp - 启动硬件服务时发生错误
+java.lang.NullPointerException: null
+	at org.dongluhitec.card.carpark.hardware.HardwareService.loggingDeviceRecord(HardwareService.java:138) ~[classes/:na]
+	at org.dongluhitec.card.carpark.hardware.HardwareService.start(HardwareService.java:87) ~[classes/:na]
+	at org.dongluhitec.card.carpark.ui.DongluCarparkApp$1.run(DongluCarparkApp.java:106) ~[classes/:na]
+	at java.util.TimerThread.mainLoop(Timer.java:555) [na:1.8.0_77]
+	at java.util.TimerThread.run(Timer.java:505) [na:1.8.0_77]
+2016-05-04 15:52:08.156 [JavaFX Application Thread] ERROR o.d.card.carpark.ui.DongluCarparkApp - 保存系统错误日志时发生错误
+java.io.FileNotFoundException: E:\ (系统找不到指定的路径。)
+	at java.io.FileOutputStream.open0(Native Method) ~[na:1.8.0_77]
+	at java.io.FileOutputStream.open(FileOutputStream.java:270) ~[na:1.8.0_77]
+	at java.io.FileOutputStream.<init>(FileOutputStream.java:213) ~[na:1.8.0_77]
+	at java.io.FileOutputStream.<init>(FileOutputStream.java:162) ~[na:1.8.0_77]
+	at org.dongluhitec.card.carpark.ui.DongluCarparkApp$1.lambda$run$0(DongluCarparkApp.java:124) ~[classes/:na]
+	at com.sun.javafx.application.PlatformImpl.lambda$null$173(PlatformImpl.java:295) ~[jfxrt.jar:na]
+	at java.security.AccessController.doPrivileged(Native Method) ~[na:1.8.0_77]
+	at com.sun.javafx.application.PlatformImpl.lambda$runLater$174(PlatformImpl.java:294) ~[jfxrt.jar:na]
+	at com.sun.glass.ui.InvokeLaterDispatcher$Future.run(InvokeLaterDispatcher.java:95) ~[jfxrt.jar:na]
+	at com.sun.glass.ui.win.WinApplication._runLoop(Native Method) ~[jfxrt.jar:na]
+	at com.sun.glass.ui.win.WinApplication.lambda$null$148(WinApplication.java:191) ~[jfxrt.jar:na]
+	at java.lang.Thread.run(Thread.java:745) ~[na:1.8.0_77]
+2016-05-04 15:52:34.371 [Timer-1] ERROR o.d.c.c.hardware.HardwareService - 打开初始化外接服务监听失败
+2016-05-04 15:52:34.414 [Timer-1] ERROR o.d.card.carpark.ui.DongluCarparkApp - 启动硬件服务时发生错误
+java.lang.NullPointerException: null
+	at org.dongluhitec.card.carpark.hardware.HardwareService.loggingDeviceRecord(HardwareService.java:138) ~[classes/:na]
+	at org.dongluhitec.card.carpark.hardware.HardwareService.start(HardwareService.java:87) ~[classes/:na]
+	at org.dongluhitec.card.carpark.ui.DongluCarparkApp$1.run(DongluCarparkApp.java:106) ~[classes/:na]
+	at java.util.TimerThread.mainLoop(Timer.java:555) [na:1.8.0_77]
+	at java.util.TimerThread.run(Timer.java:505) [na:1.8.0_77]
+2016-05-04 15:52:45.154 [JavaFX Application Thread] ERROR o.d.card.carpark.ui.DongluCarparkApp - 保存系统错误日志时发生错误
+java.io.FileNotFoundException: E:\360Downloads (拒绝访问。)
+	at java.io.FileOutputStream.open0(Native Method) ~[na:1.8.0_77]
+	at java.io.FileOutputStream.open(FileOutputStream.java:270) ~[na:1.8.0_77]
+	at java.io.FileOutputStream.<init>(FileOutputStream.java:213) ~[na:1.8.0_77]
+	at java.io.FileOutputStream.<init>(FileOutputStream.java:162) ~[na:1.8.0_77]
+	at org.dongluhitec.card.carpark.ui.DongluCarparkApp$1.lambda$run$0(DongluCarparkApp.java:124) ~[classes/:na]
+	at com.sun.javafx.application.PlatformImpl.lambda$null$173(PlatformImpl.java:295) ~[jfxrt.jar:na]
+	at java.security.AccessController.doPrivileged(Native Method) ~[na:1.8.0_77]
+	at com.sun.javafx.application.PlatformImpl.lambda$runLater$174(PlatformImpl.java:294) ~[jfxrt.jar:na]
+	at com.sun.glass.ui.InvokeLaterDispatcher$Future.run(InvokeLaterDispatcher.java:95) ~[jfxrt.jar:na]
+	at com.sun.glass.ui.win.WinApplication._runLoop(Native Method) ~[jfxrt.jar:na]
+	at com.sun.glass.ui.win.WinApplication.lambda$null$148(WinApplication.java:191) ~[jfxrt.jar:na]
+	at java.lang.Thread.run(Thread.java:745) ~[na:1.8.0_77]
+2016-05-04 15:54:10.477 [Timer-1] ERROR o.d.c.c.hardware.HardwareService - 打开初始化外接服务监听失败
+2016-05-04 15:54:10.518 [Timer-1] ERROR o.d.card.carpark.ui.DongluCarparkApp - 启动硬件服务时发生错误
+java.lang.NullPointerException: null
+	at org.dongluhitec.card.carpark.hardware.HardwareService.loggingDeviceRecord(HardwareService.java:138) ~[classes/:na]
+	at org.dongluhitec.card.carpark.hardware.HardwareService.start(HardwareService.java:87) ~[classes/:na]
+	at org.dongluhitec.card.carpark.ui.DongluCarparkApp$1.run(DongluCarparkApp.java:106) ~[classes/:na]
+	at java.util.TimerThread.mainLoop(Timer.java:555) [na:1.8.0_77]
+	at java.util.TimerThread.run(Timer.java:505) [na:1.8.0_77]
+2016-05-04 15:57:00.373 [Timer-1] ERROR o.d.c.c.hardware.HardwareService - 打开初始化外接服务监听失败

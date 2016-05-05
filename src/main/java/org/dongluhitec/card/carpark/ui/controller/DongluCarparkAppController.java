@@ -1,6 +1,7 @@
 package org.dongluhitec.card.carpark.ui.controller;
 
 import com.google.common.base.Strings;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.sun.javafx.stage.StageHelper;
 import javafx.application.Platform;
 import javafx.beans.property.ListProperty;
@@ -22,6 +23,7 @@ import org.dongluhitec.card.carpark.domain.AbstractDomain;
 import org.dongluhitec.card.carpark.domain.CardUsage;
 import org.dongluhitec.card.carpark.domain.ConnectionUsage;
 import org.dongluhitec.card.carpark.hardware.HardwareService;
+import org.dongluhitec.card.carpark.model.Device;
 import org.dongluhitec.card.carpark.ui.Alerts;
 import org.dongluhitec.card.carpark.ui.Config;
 import org.dongluhitec.card.carpark.ui.DongluCarparkApp;
@@ -30,13 +32,16 @@ import org.dongluhitec.card.carpark.util.FileUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.Inet4Address;
 import java.net.URL;
+import java.net.UnknownHostException;
+import java.nio.file.Files;
 import java.util.*;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 /**
  * 主设置窗口控制器
@@ -348,6 +353,8 @@ public class DongluCarparkAppController implements Initializable {
         } catch (IOException e) {
             Alerts.create(Alert.AlertType.ERROR).setTitle("错误").setHeaderText("保存配置文件出错").setContentText(e.getMessage()).showAndWait();
         }
+
+        setTcpDeviceIp();
     }
 
     private void loadMaxId() {
@@ -379,9 +386,43 @@ public class DongluCarparkAppController implements Initializable {
             deviceTable.setItems(FXCollections.observableArrayList(config.getLinkDeviceList()));
         } catch (IOException e) {
             LOGGER.error("读取配置文件出错", e);
-            Alerts.create(Alert.AlertType.ERROR).setTitle("错误").setHeaderText("读取配置文件出错").setContentText(e.getMessage()).showAndWait();
+            Optional<ButtonType> buttonType = Alerts.create(Alert.AlertType.CONFIRMATION).setTitle("错误").setHeaderText("读取配置文件出错,是否现在删除旧的配置文件?").setContentText(e.getMessage()).showAndWait();
+            if (buttonType.isPresent() && buttonType.get() == ButtonType.OK) {
+                new File(CONFIG_FILEPATH).delete();
+                Alerts.create(Alert.AlertType.INFORMATION).setTitle("提示").setHeaderText("删除成功,请重新启动本软件进行重新配置").showAndWait();
+            }
         }
 
     }
 
+    public static List<LinkDevice> getLinkDeviceList() {
+        if (config == null) {
+            return new ArrayList<>();
+        }else {
+            return config.getLinkDeviceList();
+        }
+    }
+
+    public void setTcpDeviceIp(){
+        String hostAddress = "";
+        try {
+            hostAddress = Inet4Address.getLocalHost().getHostAddress();
+            LOGGER.info("本机ip地址为:{}",hostAddress);
+        } catch (UnknownHostException e) {
+            Alerts.create(Alert.AlertType.ERROR).setTitle("错误").setHeaderText("获取本机ip错误").setContentText(e.getMessage()).showAndWait();
+        }
+
+        List<LinkDevice> linkDeviceList = getLinkDeviceList();
+        List<LinkDevice> tcpDeviceList = linkDeviceList.stream().filter(filter -> filter.getLinkType().equalsIgnoreCase("tcp")).collect(Collectors.toList());
+        for (LinkDevice linkDevice : tcpDeviceList) {
+            ListenableFuture<Boolean> setIpFuture = HardwareService.messageHardware.setIp(linkDevice.toDevice(), hostAddress);
+            try {
+                setIpFuture.get(2, TimeUnit.SECONDS);
+                Alerts.create(Alert.AlertType.INFORMATION).setTitle("提示").setHeaderText("设置设备:" + linkDevice.getLinkAddress() + "服务器地址成功 !").showAndWait();
+            } catch (Exception e) {
+                String headText = "设置设备 " + linkDevice.getLinkAddress() + "的服务器ip为本机地址时发生错误";
+                Alerts.create(Alert.AlertType.ERROR).setTitle("错误").setHeaderText(headText).setException(e).showAndWait();
+            }
+        }
+    }
 }

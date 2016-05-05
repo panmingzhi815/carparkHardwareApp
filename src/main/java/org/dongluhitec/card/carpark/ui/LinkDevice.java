@@ -1,6 +1,7 @@
 package org.dongluhitec.card.carpark.ui;
 
 import org.dongluhitec.card.carpark.domain.AbstractDomain;
+import org.dongluhitec.card.carpark.model.Device;
 
 import java.io.Serializable;
 
@@ -8,6 +9,9 @@ import java.io.Serializable;
  * Created by panmingzhi815 on 2015/10/9 0009.
  */
 public class LinkDevice extends AbstractDomain implements Serializable {
+
+    public static final long serialVersionUID = 1L;
+
     private String linkType;
     private String linkAddress;
     private String deviceType;
@@ -105,5 +109,18 @@ public class LinkDevice extends AbstractDomain implements Serializable {
 
     public String getDeviceVersion() {
         return deviceVersion;
+    }
+
+    public Device toDevice(){
+        Device device = new Device();
+        device.setAddress(this.getLinkAddress());
+        device.setType(this.getLinkType());
+        device.setArea(this.getDeviceAddress());
+        device.setInoutType(this.getDeviceType());
+        device.setName(this.getDeviceName());
+        device.setSupportChinese("支持");
+        device.setSupportInsideVoice("支持");
+        device.setSupportOutsideVoice("支持");
+        return device;
     }
 }

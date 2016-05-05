@@ -48,4 +48,18 @@ public interface MessageHardware {
 	 * @return ListenableFuture<String> 可监听结果
 	 */
 	ListenableFuture<String> readVersion(Device device);
+
+	/**
+	 * 设置ip
+	 * @param device 操作设备
+	 * @return ListenableFuture<Boolean> 可监听结果
+	 */
+	ListenableFuture<Boolean> setIp(Device device,String ipAddress);
+
+	/**
+	 * 读取ip
+	 * @param device 操作设备
+	 * @return ListenableFuture<String> 可监听结果
+	 */
+	ListenableFuture<String> readIp(Device device);
 }

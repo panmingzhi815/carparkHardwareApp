@@ -119,4 +119,33 @@ public class MessageFactory {
 		Message<?> readNowRecordMsg = createADScreenMsg(device,"天津海吉星欢迎您");
 		System.out.println(ByteUtils.byteArrayToHexString(readNowRecordMsg.toBytes()));
 	}
+
+	public static Message<?> createSetIpMsg(Device device, String ipAddress) {
+		String key = device.toString() + ipAddress;
+		Message<MessageBody> message = commandMap.get(key);
+		if(message != null){
+			return message;
+		}
+		TcpAddressBody eb = new TcpAddressBody();
+		eb.setAddress(ipAddress);
+		SerialDeviceAddress serialDeviceAddress = new SerialDeviceAddress();
+		serialDeviceAddress.setAddress(device.getArea());
+		MessageHeader mh = new MessageHeader(serialDeviceAddress,DirectonType.请求,MessageConstance.Message_SetIp,TcpAddressBody.LENGTH);
+
+		return new Message<MessageBody>(mh, eb);
+	}
+
+	public static Message<?> createReadIpMsg(Device device) {
+		String key = device.toString() + "createReadIpMsg";
+		Message<MessageBody> message = commandMap.get(key);
+		if(message != null){
+			return message;
+		}
+		EmptyBody eb = new EmptyBody();
+		SerialDeviceAddress serialDeviceAddress = new SerialDeviceAddress();
+		serialDeviceAddress.setAddress(device.getArea());
+		MessageHeader mh = new MessageHeader(serialDeviceAddress,DirectonType.请求,MessageConstance.Message_ReadIp,EmptyBody.LENGTH);
+
+		return new Message<MessageBody>(mh, eb);
+	}
 }

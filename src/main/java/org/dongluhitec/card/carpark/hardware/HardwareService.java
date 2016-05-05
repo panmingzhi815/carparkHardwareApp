@@ -15,6 +15,8 @@ import org.dongluhitec.card.carpark.model.CarparkNowRecord;
 import org.dongluhitec.card.carpark.model.Device;
 import org.dongluhitec.card.carpark.plate.XinlutongCallback;
 import org.dongluhitec.card.carpark.plate.XinlutongJNAImpl;
+import org.dongluhitec.card.carpark.tcp.TcpHardwareService;
+import org.dongluhitec.card.carpark.tcp.TcpRecordCallable;
 import org.dongluhitec.card.carpark.ui.Config;
 import org.dongluhitec.card.carpark.ui.LinkDevice;
 import org.dongluhitec.card.carpark.ui.controller.DongluCarparkAppController;
@@ -33,11 +35,12 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class HardwareService {
+public class HardwareService implements TcpRecordCallable {
     public final static Logger LOGGER = LoggerFactory.getLogger(HardwareService.class);
     public final int PORT = 9124;
 
@@ -58,6 +61,7 @@ public class HardwareService {
     private NioSocketConnector connector;
 
     private XinlutongJNAImpl xinlutongJNAImpl;
+    private TcpHardwareService tcpHardwareService;
 
     private HardwareService(){
         databaseDao = new HibernateDao();
@@ -75,10 +79,19 @@ public class HardwareService {
     public void start(){
         listenWebServiceMessage();
         listenLocalPort();
+        listenTcpHardwareRecord();
         delayDownloadDeviceDateTime();
         loggingDeviceRecord();
         callbackPlateDeviceRecord();
         delayRemoveOldPicture();
+    }
+
+    private void listenTcpHardwareRecord() {
+        if (this.tcpHardwareService != null) {
+            return;
+        }
+        this.tcpHardwareService = new TcpHardwareService(this);
+        this.tcpHardwareService.startAsync();
     }
 
     private void callbackPlateDeviceRecord() {
@@ -117,6 +130,10 @@ public class HardwareService {
 
     private void loggingDeviceRecord(){
         if(delayLoggerDeviceRecord != null){
+            return;
+        }
+        long count = DongluCarparkAppController.getLinkDeviceList().stream().filter(filter -> filter.getLinkType().equalsIgnoreCase("com")).count();
+        if (count <= 0) {
             return;
         }
         delayLoggerDeviceRecord = Executors.newSingleThreadScheduledExecutor();
@@ -247,7 +264,7 @@ public class HardwareService {
                 String ip = cs.getReceiveIp();
                 String port = String.valueOf(cs.getReceivePort());
                 LOGGER.debug("正在检查外接服务,ip:{} port:{}", ip, port);
-                if (cf.isConnected() && cf.getSession().isConnected()) {
+                if (cf != null && cf.isConnected() && cf.getSession().isConnected()) {
                     if (!needReplaySendDeviceInfo) {
                         LOGGER.debug("外接服务状态正常");
                         EventBusUtil.post(new EventInfo(EventInfo.EventType.外接服务通讯正常, "外接服务通讯恢复正常"));
@@ -270,7 +287,9 @@ public class HardwareService {
         ConnectFuture connect = connector.connect(new InetSocketAddress(config.getReceiveIp(), DongluCarparkAppController.config.getReceivePort()));
         boolean awaitUninterruptibly = connect.awaitUninterruptibly(10, TimeUnit.SECONDS);
         if (awaitUninterruptibly) {
-            cf.cancel();
+            if (cf != null) {
+                cf.cancel();
+            }
             cf = connect;
             needReplaySendDeviceInfo = false;
         }
@@ -332,6 +351,18 @@ public class HardwareService {
                 LOGGER.error("读取目录:" + path.getFileName() + " 失败", e);
             }
         }, 5, 5400, TimeUnit.SECONDS);
+    }
+
+    @Override
+    public void call(String deviceName, String cardIdentifier) {
+        LOGGER.info("开始处理TCP设备:{} 上传的卡片:{}记录",deviceName,cardIdentifier);
+        List<LinkDevice> linkDeviceList = DongluCarparkAppController.config.getLinkDeviceList();
+        for (LinkDevice linkDevice : linkDeviceList) {
+            if (deviceName.contains(linkDevice.getLinkAddress().split(":")[0])) {
+                databaseDao.saveCardUsage(linkDevice.getDeviceName(),cardIdentifier,new Date());
+                HardwareUtil.sendCardNO(cf.getSession(), cardIdentifier, "1", linkDevice.getDeviceName());
+            }
+        }
     }
 
 }

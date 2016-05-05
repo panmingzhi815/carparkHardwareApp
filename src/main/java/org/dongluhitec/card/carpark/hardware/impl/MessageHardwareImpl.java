@@ -8,6 +8,7 @@ import org.dongluhitec.card.carpark.connect.MessageTransport;
 import org.dongluhitec.card.carpark.connect.body.CarparkNowRecordBody;
 import org.dongluhitec.card.carpark.connect.body.ProductIDBody;
 import org.dongluhitec.card.carpark.connect.body.SimpleBody;
+import org.dongluhitec.card.carpark.connect.body.TcpAddressBody;
 import org.dongluhitec.card.carpark.hardware.MessageFactory;
 import org.dongluhitec.card.carpark.hardware.MessageHardware;
 import org.dongluhitec.card.carpark.model.CarparkNowRecord;
@@ -119,5 +120,35 @@ public class MessageHardwareImpl implements MessageHardware {
             ProductIDBody body = (ProductIDBody)sendMessage.getBody();
             return body.getProductinId();
         });
+	}
+
+	@Override
+	public ListenableFuture<Boolean> setIp(Device device, String ipAddress) {
+		LOGGER.debug("carpark's set ip:{} for:{}" ,ipAddress, device);
+		final Message<?> msg = MessageFactory.createSetIpMsg(device,ipAddress);
+		return listeningDecorator.submit(() -> {
+			MessageTransport messageTransport = getMessageTransport(device);
+			Message<?> sendMessage = messageTransport.sendMessage(msg);
+			if(sendMessage == null){
+				return null;
+			}
+			SimpleBody body = (SimpleBody)sendMessage.getBody();
+			return body.getSimpleBody() == 'y';
+		});
+	}
+
+	@Override
+	public ListenableFuture<String> readIp(Device device) {
+		LOGGER.debug("carpark's read ip for:{}" ,device);
+		final Message<?> msg = MessageFactory.createReadIpMsg(device);
+		return listeningDecorator.submit(() -> {
+			MessageTransport messageTransport = getMessageTransport(device);
+			Message<?> sendMessage = messageTransport.sendMessage(msg);
+			if(sendMessage == null){
+				return null;
+			}
+			TcpAddressBody body = (TcpAddressBody)sendMessage.getBody();
+			return body.getAddress();
+		});
 	}
 }

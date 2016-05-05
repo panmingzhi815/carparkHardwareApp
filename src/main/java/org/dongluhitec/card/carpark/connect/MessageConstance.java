@@ -21,4 +21,6 @@ public class MessageConstance {
 	public static final byte Message_SetTime = (byte) 0XB0;
 	public static final byte Message_AD = (byte) 0X06;
 	public static final byte Message_ReadVersion = (byte) 0XA1;
+	public static final byte Message_SetIp = (byte) 0XFD;
+	public static final byte Message_ReadIp = (byte) 0XFE;
 }
