@@ -14,7 +14,7 @@ public class CarparkMessageRegisterImpl extends AbstractMessageRegister {
 		requestMap.put(MessageConstance.Message_ReadNowRecord, new MessageBodyInfo(EmptyBody.LENGTH,EmptyBody.class));
 		requestMap.put(MessageConstance.Message_OpenDoor, new MessageBodyInfo(SimpleBody.LENGTH,SimpleBody.class));
 		requestMap.put(MessageConstance.Message_ScreenVoiceDoor, new MessageBodyInfo(ScreenVoiceDoorBody.LENGTH,ScreenVoiceDoorBody.class));
-		requestMap.put(MessageConstance.Message_SetTime, new MessageBodyInfo(SetDateTimeBody.LENGTH,SetDateTimeBody.class));
+		requestMap.put(MessageConstance.Message_SetTime, new MessageBodyInfo(MessageDateTimeBody.LENGTH,MessageDateTimeBody.class));
 		requestMap.put(MessageConstance.Message_ReadVersion, new MessageBodyInfo(EmptyBody.LENGTH,EmptyBody.class));
 		requestMap.put(MessageConstance.Message_AD, new MessageBodyInfo(ADScreenBody.LENGTH,ADScreenBody.class));
 		requestMap.put(MessageConstance.Message_ReadIp, new MessageBodyInfo(EmptyBody.LENGTH,EmptyBody.class));

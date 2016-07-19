@@ -76,7 +76,7 @@ public class MessageFactory {
 
 		SerialDeviceAddress serialDeviceAddress = new SerialDeviceAddress();
 		serialDeviceAddress.setAddress(device.getArea());
-		MessageHeader mh = new MessageHeader(serialDeviceAddress,DirectonType.请求,MessageConstance.Message_SetTime,SetDateTimeBody.LENGTH);
+		MessageHeader mh = new MessageHeader(serialDeviceAddress,DirectonType.请求,MessageConstance.Message_SetTime, MessageDateTimeBody.LENGTH);
 
 		return new Message<MessageBody>(mh, setDateTimeBody);
 	}

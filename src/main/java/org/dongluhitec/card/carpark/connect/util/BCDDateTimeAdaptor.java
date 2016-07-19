@@ -33,18 +33,21 @@ public class BCDDateTimeAdaptor {
 
 	public BCDDateTimeAdaptor(byte[] array, int start, boolean hasWeekByte)
 			throws DongluInvalidMessageException {
-		int year = this
-				.initYear(array[start + BCDDateTimeAdaptor.BIT_OFF_YEAR]);
-		int month = this.initMonth(array[start
-				+ BCDDateTimeAdaptor.BIT_OFF_MONTH]);
-		int day = this.initDay(array[start + BCDDateTimeAdaptor.BIT_OFF_DAY]);
-		int hour = this
-				.initHour(array[(start + BCDDateTimeAdaptor.BIT_OFF_HOUR)
-						- (hasWeekByte ? 0 : 1)]);
-		int min = this.initMin(array[(start + BCDDateTimeAdaptor.BIT_OFF_MIN)
-				- (hasWeekByte ? 0 : 1)]);
+		int year = this.initYear(array[start + 0]);
+		int month = this.initMonth(array[start + 1]);
+		int day = this.initDay(array[start + 2]);
 
-		dateTime = new DateTime(year, month, day, hour, min);
+		if (hasWeekByte) {
+			int hour = this.initHour(array[(start + 4)]);
+			int min = this.initMin(array[(start + 5)]);
+
+			dateTime = new DateTime(year, month, day, hour, min);
+		}else{
+			int hour = this.initHour(array[(start + 3)]);
+			int min = this.initMin(array[(start + 4)]);
+
+			dateTime = new DateTime(year, month, day, hour, min);
+		}
 	}
 
 	public Date getDate() {

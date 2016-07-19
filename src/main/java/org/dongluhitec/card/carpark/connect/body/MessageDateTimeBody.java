@@ -7,16 +7,16 @@ import org.dongluhitec.card.carpark.connect.util.BCDDateTimeAdaptor;
 
 import java.util.Date;
 
-public class SetDateTimeBody implements MessageBody {
+public class MessageDateTimeBody implements MessageBody {
 
 	public static final int LENGTH = 6;
 
 	private Date date;
 
-	public SetDateTimeBody() {
+	public MessageDateTimeBody() {
 	}
 
-	public SetDateTimeBody(Date date) {
+	public MessageDateTimeBody(Date date) {
 		this.date = date;
 	}
 
@@ -30,12 +30,12 @@ public class SetDateTimeBody implements MessageBody {
 
 	@Override
 	public void initContent(byte[] array) throws DongluInvalidMessageException {
-		this.date = new BCDDateTimeAdaptor(array, 0, true).getDate();
+		this.date = new BCDDateTimeAdaptor(array, 0, false).getDate();
 	}
 
 	@Override
 	public byte[] toBytes() {
-		return new BCDDateTimeAdaptor(this.date).getBytes(true);
+		return new BCDDateTimeAdaptor(this.date).getBytes(false);
 	}
 
 	@Override

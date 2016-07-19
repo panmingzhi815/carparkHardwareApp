@@ -1,18 +1,15 @@
 package org.dongluhitec.card.carpark.tcp;
 
-import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.core.service.IoHandler;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IoSession;
 import org.dongluhitec.card.carpark.connect.MessageBody;
-import org.dongluhitec.card.carpark.connect.body.SetDateTimeBody;
+import org.dongluhitec.card.carpark.connect.body.MessageDateTimeBody;
 import org.dongluhitec.card.carpark.connect.body.TcpRecordBody;
 import org.dongluhitec.card.carpark.connect.util.ByteUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.util.Arrays;
 import java.util.Date;
 
@@ -51,7 +48,7 @@ public class TcpHandler extends IoHandlerAdapter implements IoHandler {
             TcpRecordBody parse = (TcpRecordBody) parse(bytes);
             LOGGER.debug("解析消息成功");
             callable.call(session.toString(),parse.getCardIdentifier());
-            returnMessage.setMessageBody(new SetDateTimeBody(new Date()));
+            returnMessage.setMessageBody(new MessageDateTimeBody(new Date()));
             session.write(returnMessage.toBytes());
             session.close(true);
         } catch (Exception e) {
